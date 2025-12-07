@@ -1,3 +1,8 @@
+# Helian-MMCO (Sundial Lite edit)
+
+Personal simple modification of Sundial-lite. (Helian/Helianthus)
+![6457](https://github.com/user-attachments/assets/9a100ce6-6b0d-4f5f-8e8c-59ab63c65ad8)
+
 # Sundial Lite
 
 Sundial Lite is the free and open source version of Sundial. It's using [GNU General Public Licence 3.0](./LICENSE). For the full and paid version, visit [Aifadian](https://afdian.com/a/geforcelegend). For legit issues, I'll try avoid using platforms blocked by GFW like Patreon, so sorry for some users having issue signing in this site.
