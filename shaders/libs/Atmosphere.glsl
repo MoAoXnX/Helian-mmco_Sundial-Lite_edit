@@ -1,4 +1,4 @@
-const vec3 ozoneAbsorption = vec3(3e-6, 6e-6, 0.2e-6);
+const vec3 ozoneAbsorption = vec3(4e-6, 6e-6, 0.2e-6);
 const vec3 pureRayleighBeta = vec3(4.2e-6, 10.1e-6, 29.6e-6);
 const vec3 rayleighBeta = pureRayleighBeta + ozoneAbsorption;
 const float mieBeta = 2.1e-5;
@@ -328,7 +328,7 @@ float netherFogAbsorption(float netherDepth) {
 }
 
 vec3 netherFogScattering(float netherDepth) {
-    return NETHER_FOG_BRIGHTNESS * 5.0 * (1.0 - exp(-netherDepth * netherAbsorptionBeta)) * pow(fogColor, vec3(2.2));
+    return NETHER_FOG_BRIGHTNESS * 0.2 * (1.0 - exp(-netherDepth * netherAbsorptionBeta)) * pow(normalize(max(fogColor, vec3(1e-5))), vec3(2.2));
 }
 
 vec3 netherFogTotal(vec3 targetColor, float netherDepth) {
