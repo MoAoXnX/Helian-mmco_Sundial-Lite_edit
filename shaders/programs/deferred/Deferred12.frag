@@ -270,11 +270,11 @@ vec4 screenSpaceVisibiliyBitmask(GbufferData gbufferData, vec2 texcoord, ivec2 t
         vec2 noise = vec2(blueNoiseTemporal(texcoord).x, bayer64Temporal(gl_FragCoord.xy));
         const float r2Double = 0.7548776662;
         vec4 originProjPos = vec4(vec3(gbufferProjection[0].x, gbufferProjection[1].y, gbufferProjection[2].z) * originViewPos + gbufferProjection[3].xyz, -originViewPos.z);
+        #ifdef TAA
+            originProjPos.xy += taaOffset * originProjPos.w;
+        #endif
         float originProjScale = 0.5 / originProjPos.w;
         vec2 originCoord = vec2(originProjPos.xy * originProjScale + 0.5);
-        #ifdef TAA
-            originCoord += taaOffset * 0.5;
-        #endif
 
         for (int i = 0; i < VB_TRACE_COUNT; i++) {
             noise = fract(noise + vec2(r2Double, r2Double * r2Double));
@@ -383,7 +383,8 @@ void main() {
     GbufferData gbufferData = getGbufferData(texel, texcoord);
     vec4 currData = screenSpaceVisibiliyBitmask(gbufferData, texcoord, texel);
     vec4 prevData = texelFetch(colortex5, texel, 0);
-    float blendWeight = clamp(1.0 / VB_MAX_BLEDED_FRAMES + clamp(1.0 - 1e+20 * dot(prevData, vec4(1.0)), 0.0, 1.0), 0.0, 1.0);
+    float prevFrames = unpackF8D24(texelFetch(colortex6, texel, 0).y).x - 1.0;
+    float blendWeight = clamp(1.0 / min(VB_MAX_BLEDED_FRAMES, prevFrames), 0.0, 1.0);
     texBuffer5 = mix(prevData, currData, blendWeight);
 }
 
