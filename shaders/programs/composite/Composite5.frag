@@ -17,7 +17,6 @@
 //
 
 #extension GL_ARB_gpu_shader5 : enable
-#extension GL_ARB_shading_language_packing: enable
 
 layout(location = 0) out vec4 texBuffer3;
 
@@ -28,7 +27,6 @@ in vec2 texcoord;
 
 #include "/settings/CloudSettings.glsl"
 #include "/settings/GlobalSettings.glsl"
-#include "/settings/VolumetricLightSettings.glsl"
 
 #ifdef SHADOW_AND_SKY
     in vec3 skyColorUp;
@@ -204,7 +202,7 @@ void main() {
                 #endif
                 vec3 shadow = singleSampleShadow(
                     waterWorldPos, mat3(gbufferModelViewInverse) * gbufferData.geoNormal, NdotL, shadowLightFactor,
-                    gbufferData.smoothness, gbufferData.porosity, gbufferData.lightmap.y, 0.0
+                    gbufferData.smoothness, gbufferData.porosity, gbufferData.lightmap.y
                 );
                 shadow *= (1.0 - gbufferData.metalness) * gbufferData.albedo.rgb * gbufferData.albedo.w * isTargetParticle + sunlightSpecular(
                     waterWorldDir, shadowDirection, worldNormal, gbufferData.albedo.rgb,

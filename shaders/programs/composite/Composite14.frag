@@ -16,8 +16,6 @@
 //  Post processing
 //
 
-#extension GL_ARB_shading_language_packing : enable
-
 layout(location = 0) out vec4 texBuffer0;
 
 in vec2 texcoord;
@@ -251,7 +249,7 @@ void main() {
     #ifdef LOD
         if (screenDepth == 1.0) {
             screenDepth = getLodDepthWater(sampleCoord);
-            viewDepth = screenToViewDepth(screenDepth);
+            viewDepth = screenToViewDepthLod(screenDepth);
         } else
     #endif
     {

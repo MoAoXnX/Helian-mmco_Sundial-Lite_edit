@@ -17,7 +17,6 @@
 //
 
 #extension GL_ARB_gpu_shader5 : enable
-#extension GL_ARB_shading_language_packing : enable
 
 layout(location = 0) out vec4 gbufferData0;
 layout(location = 1) out vec4 gbufferData1;
@@ -86,7 +85,6 @@ void main() {
             rawData.emissive += step(rawData.emissive, 1e-3) * step(rawData.materialID, -0.5);
         }
     #endif
-    rawData.materialID = mix(rawData.materialID, MAT_STAINED_GLASS, float(rawData.materialID < 0.0));
 
     #ifndef LABPBR_POROSITY
         rawData.porosity = 0.0;

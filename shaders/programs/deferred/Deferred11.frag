@@ -17,7 +17,6 @@
 //
 
 #extension GL_ARB_gpu_shader5 : enable
-#extension GL_ARB_shading_language_packing: enable
 
 layout(location = 0) out vec4 texBuffer3;
 
@@ -92,7 +91,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                     float offsetY = -depthSampleRadius;
                     for (int j = -1; j <= 1; j++) {
                         vec3 sampleCoord = distortShadowCoord(basicShadowCoordNoDistort + offsetX * offsetDirection1 + offsetY * offsetDirection2);
-                        float sampleDepth = textureLod(shadowtex1, sampleCoord.st, 1.0).r;
+                        float sampleDepth = textureLod(shadowtex1, sampleCoord.st, 0.0).r;
                         depthSum += sampleDepth;
                         avgOcclusionDepth += clamp(sampleCoord.z - sampleDepth, 0.0, 1.0);
                         offsetY += depthSampleRadius;
@@ -103,7 +102,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                     float filterRadius = min(avgOcclusionDepth * 80.0 / 9.0, 4.0) + 0.02 * shadowDistance / distortFactor;
 
                     vec3 waterShadowCoord = basicShadowCoord - vec3(0.0, 0.5, 0.0);
-                    vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection, 1.0);
+                    vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection);
                     result = caustic * (lightFactor * basicSunlight);
 
                     const mat2 rotation = mat2(cos(2.39996323), sin(2.39996323), -sin(2.39996323), cos(2.39996323));
@@ -128,7 +127,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
 
                         if (needSubsurfaceScattering) {
                             vec3 sssSampleCoord = distortShadowCoord(sssShadowCoord + vec3(sampleOffset.st * sssRadius, 0.0));
-                            float shadowDepth = textureLod(shadowtex1, sssSampleCoord.st, 1.0).r;
+                            float shadowDepth = textureLod(shadowtex1, sssSampleCoord.st, 0.0).r;
                             opticalDepth += clamp(sssSampleCoord.z - shadowDepth + 1e-4, 0.0, 1.0);
                         }
 
@@ -139,7 +138,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                             float sampleTransparentShadow = textureLod(shadowtex0, sampleShadowCoord, 0.0);
                             if (sampleTransparentShadow < 1.0) {
                                 sampleTransparentShadow = 1.0 - sampleTransparentShadow;
-                                vec4 sampleTransparentColor = textureLod(shadowcolor0, sampleShadowCoord.st, 1.0);
+                                vec4 sampleTransparentColor = textureLod(shadowcolor0, sampleShadowCoord.st, 0.0);
                                 transparentShadow += sampleTransparentShadow;
                                 transparentShadowColor += sampleTransparentColor * sampleTransparentShadow;
                             }
@@ -330,9 +329,11 @@ void main() {
 
         #ifdef SHADOW_AND_SKY
             float ambientOcclusion = 1.0 - texelFetch(colortex5, texel, 0).w;
+            vec3 plantSkyNormal = worldNormal;
+            plantSkyNormal.y = mix(worldNormal.y, 1.0, sqrt(clamp(gbufferData.porosity * 1.33333 - 0.25 * 1.33333, 0.0, 1.0)));
             finalColor.rgb +=
-                pow(gbufferData.lightmap.y, 2.2) * (skyColorUp + sunColor) * (0.6 - 0.3 * weatherStrength) * ambientOcclusion *
-                (worldNormal.y * 0.3 + 0.6 + mix(dot(worldNormal, sunDirection), dot(worldNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
+                pow(gbufferData.lightmap.y, 2.2) * (skyColorUp + sunColor) * (0.9 - 0.5 * weatherStrength) * ambientOcclusion *
+                (plantSkyNormal.y * 0.3 + 0.6 + mix(dot(plantSkyNormal, sunDirection), dot(plantSkyNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
         #endif
         float NdotV = clamp(dot(viewDir, -gbufferData.normal), 0.0, 1.0);
         vec3 diffuseAbsorption = (1.0 - gbufferData.metalness) * diffuseAbsorptionWeight(NdotV, gbufferData.smoothness, gbufferData.metalness, n, k);
@@ -368,7 +369,7 @@ void main() {
             #else
                 shadow *= singleSampleShadow(
                     worldPos, worldGeoNormal, NdotL, shadowLightFactor,
-                    gbufferData.smoothness, gbufferData.porosity, gbufferData.lightmap.y, 0.0
+                    gbufferData.smoothness, gbufferData.porosity, gbufferData.lightmap.y
                 );
             #endif
             finalColor.rgb += shadow;

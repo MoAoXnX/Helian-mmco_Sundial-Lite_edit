@@ -17,7 +17,6 @@
 //
 
 #extension GL_ARB_gpu_shader5 : enable
-#extension GL_ARB_shading_language_packing : enable
 
 layout(location = 0) out vec4 gbufferData0;
 layout(location = 1) out vec4 gbufferData1;
@@ -47,11 +46,11 @@ void main() {
     rawData.albedo = color;
     rawData.lightmap = blockLight;
     rawData.geoNormal = tbnMatrix[2];
-    rawData.smoothness = 1.0 - float(materialID == MAT_TORCH);
+    rawData.smoothness = clamp(1.0 + materialID, 0.0, 1.0);
     rawData.metalness = 0.0;
     rawData.porosity = 0.0;
-    rawData.emissive = float(materialID == MAT_TORCH);
-    rawData.materialID = materialID;
+    rawData.emissive = 1.0 - rawData.smoothness;
+    rawData.materialID = max(0.0, materialID);
     rawData.parallaxOffset = 0.0;
     rawData.depth = 0.0;
 
