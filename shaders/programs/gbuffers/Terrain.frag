@@ -25,9 +25,9 @@ layout(location = 2) out vec4 gbufferData2;
 in vec4 texlmcoord;
 in vec3 color;
 in vec3 viewPos;
+in vec4 coordRange;
 
 flat in int material;
-flat in vec4 coordRange;
 
 #include "/settings/GlobalSettings.glsl"
 #include "/libs/Uniform.glsl"
@@ -70,11 +70,15 @@ void main() {
 
     vec2 albedoTexSize = vec2(textureSize(gtexture, 0));
     vec2 albedoTexelSize = 1.0 / albedoTexSize;
+    vec4 fixedCoordRange = coordRange;
+    if (fwidth(coordRange.x) + fwidth(coordRange.y) > 1e-6) {
+        fixedCoordRange = vec4(0.0, 0.0, 1.0, 1.0);
+    }
     int textureResolutionFixed = (floatBitsToInt(max(textureScale.x * albedoTexSize.x, textureScale.y * albedoTexSize.y)) & 0x7FC00000) >> 22;
     textureResolutionFixed = ((textureResolutionFixed >> 1) + (textureResolutionFixed & 1)) - 0x0000007F;
     textureResolutionFixed = 1 << textureResolutionFixed;
     vec2 pixelScale = albedoTexelSize / textureScale;
-    vec2 quadSize = 1.0 / coordRange.zw;
+    vec2 quadSize = 1.0 / fixedCoordRange.zw;
 
     float parallaxOffset = 0.0;
     vec2 texcoord = texlmcoord.st;
@@ -87,15 +91,15 @@ void main() {
             vec3 textureViewer = viewPos * tbnMatrix;
             textureViewer.xy *= textureScale;
             #ifdef VOXEL_PARALLAX
-                texcoord = perPixelParallax(texlmcoord.st, textureViewer, albedoTexSize, albedoTexelSize, coordRange, parallaxTexNormal, parallaxOffset);
+                texcoord = perPixelParallax(texlmcoord.st, textureViewer, albedoTexSize, albedoTexelSize, fixedCoordRange, parallaxTexNormal, parallaxOffset);
             #else
-                texcoord = calculateParallax(texlmcoord.st, textureViewer, coordRange, quadSize, albedoTexSize, albedoTexelSize, parallaxOffset);
+                texcoord = calculateParallax(texlmcoord.st, textureViewer, fixedCoordRange, quadSize, albedoTexSize, albedoTexelSize, parallaxOffset);
             #endif
         }
     #endif
 
     #if ANISOTROPIC_FILTERING_QUALITY > 0 && !defined MC_ANISOTROPIC_FILTERING
-        vec4 albedoData = anisotropicFilter(texcoord, albedoTexSize, albedoTexelSize, texGradX, texGradY, coordRange, quadSize);
+        vec4 albedoData = anisotropicFilter(texcoord, albedoTexSize, albedoTexelSize, texGradX, texGradY, fixedCoordRange, quadSize);
     #else
         vec4 albedoData = textureGrad(gtexture, texcoord, texGradX, texGradY);
     #endif
@@ -122,6 +126,10 @@ void main() {
     rawData.parallaxOffset = parallaxOffset;
     rawData.depth = 0.0;
 
+    if ((max(material, 0) & 0x4800) == 0x4800 || material == 8198 || material == 8206 || material == 8207) {
+        rawData.materialID = MAT_GRASS;
+    }
+
     #ifdef MC_SPECULAR_MAP
         vec4 specularData = textureLod(specular, texcoord, 0.0);
         SPECULAR_FORMAT(rawData, specularData);
@@ -139,7 +147,7 @@ void main() {
             float(material == 8198) * clamp(2.0 * rawData.albedo.r - 1.5 * rawData.albedo.g, 0.0, 1.0) + 
             float(material == 8200) * clamp(2.0 * rawData.albedo.b - 1.0 * rawData.albedo.r, 0.0, 1.0) + 
             float(material == 8197 || material == 8202) * clamp((0.8 * rawData.albedo.r - 1.2 * rawData.albedo.b) * dot(rawData.albedo.rgb, vec3(0.3333)), 0.0, 1.0) + 
-            float(material == 8203) * float(rawData.albedo.r > 0.4 * (rawData.albedo.b + rawData.albedo.g) + 0.35 || dot(rawData.albedo.rgb, vec3(1.0)) > 2.999) + 
+            float(material == 8203) * float(pow2(rawData.albedo.r) > 0.3 * (pow2(rawData.albedo.b) + pow2(rawData.albedo.g)) + 0.3) + 
             float(material == 8204) * (clamp(2.0 * rawData.albedo.b - 4.5 * rawData.albedo.r, 0.0, 1.0) + clamp(2.0 * rawData.albedo.r - 3.0 * rawData.albedo.b, 0.0, 1.0)) + 
             float(material == 8205) * clamp(0.5 * rawData.albedo.b - 1.0 * rawData.albedo.r - 0.2, 0.0, 1.0) + 
             clamp(float(commonEmissive - 16384), 0.0, 1.0) * clamp(0.57 * length(rawData.albedo.rgb) + float(commonEmissive == 0x5000), 0.0, 1.0)
@@ -205,14 +213,14 @@ void main() {
                     rawData.normal = tbnMatrix * parallaxTexNormal;
                 #else
                     #ifdef SMOOTH_PARALLAX
-                        rawData.normal = heightBasedNormal(normals, texcoord, coordRange, quadTexelSize, albedoTexSize, pixelScale);
+                        rawData.normal = heightBasedNormal(normals, texcoord, fixedCoordRange, quadTexelSize, albedoTexSize, pixelScale);
                     #else
                         const float eps = 1e-4;
-                        vec2 tileCoord = (texcoord - coordRange.xy) * quadSize;
-                        float rD = textureGrad(normals, clampCoordRange(tileCoord + vec2(eps * quadTexelSize.x, 0.0), coordRange), grad, grad).a;
-                        float lD = textureGrad(normals, clampCoordRange(tileCoord - vec2(eps * quadTexelSize.x, 0.0), coordRange), grad, grad).a;
-                        float uD = textureGrad(normals, clampCoordRange(tileCoord + vec2(0.0, eps * quadTexelSize.y), coordRange), grad, grad).a;
-                        float dD = textureGrad(normals, clampCoordRange(tileCoord - vec2(0.0, eps * quadTexelSize.y), coordRange), grad, grad).a;
+                        vec2 tileCoord = (texcoord - fixedCoordRange.xy) * quadSize;
+                        float rD = textureGrad(normals, clampCoordRange(tileCoord + vec2(eps * quadTexelSize.x, 0.0), fixedCoordRange), grad, grad).a;
+                        float lD = textureGrad(normals, clampCoordRange(tileCoord - vec2(eps * quadTexelSize.x, 0.0), fixedCoordRange), grad, grad).a;
+                        float uD = textureGrad(normals, clampCoordRange(tileCoord + vec2(0.0, eps * quadTexelSize.y), fixedCoordRange), grad, grad).a;
+                        float dD = textureGrad(normals, clampCoordRange(tileCoord - vec2(0.0, eps * quadTexelSize.y), fixedCoordRange), grad, grad).a;
                         rawData.normal = vec3((lD - rD), (dD - uD), step(abs(lD - rD) + abs(dD - uD), 1e-3));
                     #endif
                     rawData.normal = mix(rawData.normal, rippleNormal, wetStrength);
@@ -243,7 +251,7 @@ void main() {
         #endif
         {
             #ifdef SMOOTH_NORMAL
-                normalData = bilinearNormalSample(normals, texcoord, coordRange, quadTexelSize, albedoTexSize);
+                normalData = bilinearNormalSample(normals, texcoord, fixedCoordRange, quadTexelSize, albedoTexSize);
             #endif
             #ifdef MC_NORMAL_MAP
                 rawData.normal = NORMAL_FORMAT(normalData.xyz);

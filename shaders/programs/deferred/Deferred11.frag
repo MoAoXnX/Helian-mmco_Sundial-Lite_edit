@@ -19,6 +19,7 @@
 #extension GL_ARB_gpu_shader5 : enable
 
 layout(location = 0) out vec4 texBuffer3;
+layout(location = 1) out uint texBuffer6;
 
 #ifdef SHADOW_AND_SKY
     in vec3 skyColorUp;
@@ -295,49 +296,56 @@ void main() {
         } else
     #endif
     {
-        float depthWithHand = gbufferData.depth;
         if (gbufferData.materialID == MAT_HAND) {
-            depthWithHand = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
+            gbufferData.depth = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
         }
-        viewPosNoPOM = screenToViewPos(texcoord, depthWithHand - 1e-7);
-        depthWithHand += parallaxData / 512.0;
-        viewPos = screenToViewPos(texcoord, depthWithHand - 1e-7);
+        float depthWithHand = gbufferData.depth - 1e-7;
+        vec3 viewDirection = vec3(texcoord * 2.0 - 1.0, gbufferProjectionInverse[3].z);
+        #ifdef TAA
+            viewDirection.xy -= taaOffset;
+        #endif
+        viewDirection.xy = vec2(gbufferProjectionInverse[0].x, gbufferProjectionInverse[1].y) * viewDirection.xy + gbufferProjectionInverse[3].xy;
+        depthWithHand = depthWithHand * 2.0 - 1.0;
+        viewPosNoPOM = viewDirection / (gbufferProjectionInverse[2].w * depthWithHand + gbufferProjectionInverse[3].w);
+        depthWithHand += parallaxData / 512.0 * 2.0;
+        gbufferData.depth += parallaxData / 512.0;
+        viewPos = viewDirection / (gbufferProjectionInverse[2].w * depthWithHand + gbufferProjectionInverse[3].w);
     }
+    texBuffer6 = floatBitsToUint(gbufferData.depth + float(gbufferData.materialID == MAT_HAND));
     vec3 worldPos = viewToWorldPos(viewPosNoPOM);
     vec3 worldDir = normalize(worldPos - gbufferModelViewInverse[3].xyz);
 
-    vec4 finalColor = vec4(vec3(0.0), parallaxData);
+    vec4 finalColor = vec4(vec3(0.0), unpackF8D24(texelFetch(colortex6, texel, 0).x).x);
 
     if (abs(gbufferData.depth) < 1.0) {
-        float viewLength = inversesqrt(dot(viewPos, viewPos));
-        vec3 viewDir = viewPos * viewLength;
         vec3 worldNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.normal);
         vec3 worldGeoNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.geoNormal);
-        finalColor.w += 512.0 * float(gbufferData.materialID == MAT_HAND);
-
-        float diffuseWeight = pow(1.0 - gbufferData.smoothness, 5.0);
-        vec3 n = vec3(1.5);
-        vec3 k = vec3(0.0);
-        #ifdef LABPBR_F0
-            n = mix(n, vec3(f0ToIor(gbufferData.metalness)), step(0.001, gbufferData.metalness));
-            hardcodedMetal(gbufferData.metalness, n, k);
-            gbufferData.metalness = step(229.5 / 255.0, gbufferData.metalness);
-        #endif
-        #ifndef FULL_REFLECTION
-            diffuseWeight = 1.0 - (1.0 - diffuseWeight) * sqrt(clamp(gbufferData.smoothness - (1.0 - gbufferData.smoothness) * (1.0 - 0.6666 * gbufferData.metalness), 0.0, 1.0));
-        #endif
 
         #ifdef SHADOW_AND_SKY
+            float diffuseWeight = pow(1.0 - gbufferData.smoothness, 5.0);
+            vec3 n = vec3(1.5);
+            vec3 k = vec3(0.0);
+            #ifdef LABPBR_F0
+                n = mix(n, vec3(f0ToIor(gbufferData.metalness)), step(0.001, gbufferData.metalness));
+                hardcodedMetal(gbufferData.metalness, n, k);
+                gbufferData.metalness = step(229.5 / 255.0, gbufferData.metalness);
+            #endif
+            #ifndef FULL_REFLECTION
+                diffuseWeight = 1.0 - (1.0 - diffuseWeight) * sqrt(clamp(gbufferData.smoothness - (1.0 - gbufferData.smoothness) * (1.0 - 0.6666 * gbufferData.metalness), 0.0, 1.0));
+            #endif
             float ambientOcclusion = 1.0 - texelFetch(colortex5, texel, 0).w;
             vec3 plantSkyNormal = worldNormal;
-            plantSkyNormal.y = mix(worldNormal.y, 1.0, sqrt(clamp(gbufferData.porosity * 1.33333 - 0.25 * 1.33333, 0.0, 1.0)));
+            if (gbufferData.materialID == MAT_GRASS) {
+                plantSkyNormal = vec3(0.0, 1.0, 0.0);
+            }
             finalColor.rgb +=
                 pow(gbufferData.lightmap.y, 2.2) * (skyColorUp + sunColor) * (0.9 - 0.5 * weatherStrength) * ambientOcclusion *
                 (plantSkyNormal.y * 0.3 + 0.6 + mix(dot(plantSkyNormal, sunDirection), dot(plantSkyNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
+            float viewLength = inversesqrt(dot(viewPos, viewPos));
+            float NdotV = clamp(dot(viewPos, -gbufferData.normal) * viewLength, 0.0, 1.0);
+            vec3 diffuseAbsorption = (1.0 - gbufferData.metalness) * diffuseAbsorptionWeight(NdotV, gbufferData.smoothness, gbufferData.metalness, n, k);
+            finalColor.rgb *= diffuseAbsorption + diffuseWeight / PI;
         #endif
-        float NdotV = clamp(dot(viewDir, -gbufferData.normal), 0.0, 1.0);
-        vec3 diffuseAbsorption = (1.0 - gbufferData.metalness) * diffuseAbsorptionWeight(NdotV, gbufferData.smoothness, gbufferData.metalness, n, k);
-        finalColor.rgb *= diffuseAbsorption + diffuseWeight / PI;
         finalColor.rgb += gbufferData.emissive * PBR_BRIGHTNESS * PI;
         finalColor.rgb *= gbufferData.albedo.rgb;
 
@@ -382,4 +390,4 @@ void main() {
     texBuffer3 = finalColor;
 }
 
-/* DRAWBUFFERS:3 */
+/* DRAWBUFFERS:36 */

@@ -85,12 +85,9 @@ void main() {
     vec3 reflectionColor = texelFetch(colortex4, texel, 0).rgb;
     if (waterDepth < solidDepth) {
         reflectionColor *= solidColor.w;
-        vec3 worldDir = waterWorldDir;
-        vec3 waterWorldPos = waterWorldDir * waterViewDepthNoLimit + gbufferModelViewInverse[3].xyz;
         bool isTargetWater = gbufferData.materialID == MAT_WATER;
         bool isTargetNotParticle = gbufferData.materialID != MAT_PARTICLE;
         vec3 worldNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.normal);
-        vec3 worldGeoNormal = mat3(gbufferModelViewInverse) * gbufferData.geoNormal;
         float LdotH = clamp(dot(-worldNormal, waterWorldDir), 0.0, 1.0);
         vec3 stainedColor = vec3(0.0);
         if (isTargetNotParticle) {
@@ -101,9 +98,10 @@ void main() {
             vec2 blueNoise = textureLod(noisetex, texcoord * screenSize / 64.0, 0.0).xy;
             vec2 randomOffset = vec2(cos(blueNoise.x * 2.0 * PI), sin(blueNoise.x * 2.0 * PI)) * blueNoise.y;
             float k = sqrt(n * n - (1.0 - LdotH * LdotH));
+            vec3 viewDir = viewPos * worldDistanceInv;
             vec3 refractDirection = normalize(
-                viewPos * worldDistanceInv - (LdotH + k) * gbufferData.normal +
-                (dot(-worldGeoNormal, waterWorldDir) + k) * gbufferData.geoNormal * float(isTargetWater) // Get this idea from zombye/spectrum, MIT Licence
+                viewDir - (LdotH + k) * gbufferData.normal +
+                (dot(-gbufferData.geoNormal, viewDir) + k) * gbufferData.geoNormal * float(isTargetWater) // Get this idea from zombye/spectrum, MIT Licence
             );
             vec2 refractionOffset = (refractDirection.xy - viewPos.xy / viewPos.z * refractDirection.z + roughness * randomOffset) * refractionStrength;
             vec2 screenEdgeIntersection = mix(texcoord, 1.0 - texcoord, clamp(refractionOffset * 1e+20, 0.0, 1.0)) / abs(refractionOffset);
@@ -130,10 +128,12 @@ void main() {
                     viewPos = screenToViewPos(refractionTarget, solidDepth);
                 }
                 worldPos = mat3(gbufferModelViewInverse) * viewPos;
-                worldDir = normalize(worldPos);
             }
         }
 
+        vec3 worldDir = normalize(worldPos);
+        worldPos += gbufferModelViewInverse[3].xyz;
+        vec3 waterWorldPos = waterWorldDir * waterViewDepthNoLimit + gbufferModelViewInverse[3].xyz;
         float waterDistance = distance(worldPos, waterWorldPos);
         vec3 rawSolidColor = solidColor.rgb;
         n -= 0.166666 * float(isTargetWater);
@@ -164,7 +164,7 @@ void main() {
                     solidColor.rgb += endStars(worldDir);
             #else
                 vec4 intersectionData = planetIntersectionData(gbufferModelViewInverse[3].xyz, worldDir);
-                float atmosphereDepth = mix(waterDistance * (1.0 + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 500.0 + 500.0 * float(intersectionData.z > 0.0), step(0.999999, solidDepth));
+                float atmosphereDepth = mix(waterDistance * (1.0 + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 1000.0 - intersectionData.w * 500.0, step(0.999999, solidDepth));
                 #if defined ATMOSPHERE_SCATTERING_FOG && defined SHADOW_AND_SKY
                     solidColor.rgb = solidAtmosphereScattering(solidColor.rgb, worldDir, skyColorUp, atmosphereDepth, gbufferData.lightmap.y);
                 #endif
@@ -186,7 +186,7 @@ void main() {
         float isTargetParticle = 1.0 - float(isTargetNotParticle);
         vec3 vanillaLight = pow2(gbufferData.lightmap.y) * (skyColorUp + sunColor * SUNLIGHT_BRIGHTNESS) * (1.0 - gbufferData.metalness);
         #ifdef IS_IRIS
-            float eyeRelatedDistance = length(worldPos + relativeEyePosition);
+            float eyeRelatedDistance = length(waterWorldPos + relativeEyePosition);
             gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
         #endif
         const float fadeFactor = VANILLA_BLOCK_LIGHT_FADE;
@@ -234,7 +234,7 @@ void main() {
             #ifdef SHADOW_AND_SKY
                 #ifdef ATMOSPHERE_SCATTERING_FOG
                     vec4 intersectionData = planetIntersectionData(gbufferModelViewInverse[3].xyz, waterWorldDir);
-                    float atmosphereDepth = mix(waterViewDepthNoLimit * (1.0 + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 500.0 + 500.0 * float(intersectionData.z > 0.0), step(0.999999, waterDepth));
+                    float atmosphereDepth = mix(waterViewDepthNoLimit * (1.0 + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 1000.0 - intersectionData.w * 500.0, step(0.999999, waterDepth));
                     solidColor.rgb = solidAtmosphereScattering(solidColor.rgb, waterWorldDir, skyColorUp, atmosphereDepth, eyeBrightnessSmooth.y / 240.0);
                 #endif
             #endif
@@ -254,7 +254,6 @@ void main() {
         solidColor.rgb += snowFogScattering(skyColorUp, waterViewDepth, eyeBrightnessSmooth.y / 240.0);
     }
 
-    solidColor.w = float(gbufferData.materialID == MAT_HAND);
     texBuffer3 = solidColor;
 }
 

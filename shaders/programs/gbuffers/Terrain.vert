@@ -31,9 +31,9 @@ layout(location = 11) in vec4 mc_midTexCoord;
 out vec4 texlmcoord;
 out vec3 color;
 out vec3 viewPos;
+out vec4 coordRange;
 
 flat out int material;
-flat out vec4 coordRange;
 
 #define MOD_PLANT_DETECTION
 
@@ -144,8 +144,10 @@ void main() {
         vertexCoord = gl_MultiTexCoord0.st + (mc_midTexCoord.st - gl_MultiTexCoord0.st).ts;
     }
     vec2 coordToCenter = abs(vertexCoord - mc_midTexCoord.st);
-    minCoord = mc_midTexCoord.st - coordToCenter;
-    coordSize = coordToCenter * 2.0;
+    vec2 albedoTexSize = textureSize(gtexture, 0);
+    vec2 albedoTexelSize = 1.0 / albedoTexSize;
+    minCoord = floor((mc_midTexCoord.st - coordToCenter) * albedoTexSize) * albedoTexelSize;
+    coordSize = ceil(coordToCenter * 2.0 * albedoTexSize) * albedoTexelSize;
     coordRange = vec4(minCoord, coordSize);
 
 

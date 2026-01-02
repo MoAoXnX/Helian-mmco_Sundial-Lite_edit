@@ -28,31 +28,24 @@ in vec2 texcoord;
 void main() {
     ivec2 texel = ivec2(gl_FragCoord.st);
     GbufferData gbufferData = getGbufferData(texel, texcoord);
+    gbufferData.depth = uintBitsToFloat(texelFetch(colortex6, texel, 0).r);
     vec3 viewPos;
     #ifdef LOD
-        if (gbufferData.depth == 1.0) {
-            gbufferData.depth = getLodDepthSolidDeferred(texcoord);
-            viewPos = screenToViewPosLod(texcoord, gbufferData.depth - 1e-7);
-            gbufferData.depth = -gbufferData.depth;
+        if (gbufferData.depth < 0.0) {
+            viewPos = screenToViewPosLod(texcoord, -gbufferData.depth - 1e-7);
         } else
     #endif
     {
-        if (gbufferData.materialID == MAT_HAND) {
-            gbufferData.depth = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
-        }
+        gbufferData.depth -= float(gbufferData.depth > 1.0);
         viewPos = screenToViewPos(texcoord, gbufferData.depth - 1e-7);
     }
 
     vec4 finalColor = vec4(0.0);
     if (abs(gbufferData.depth) < 1.0) {
-        vec3 viewDir = normalize(viewPos);
-        vec3 worldPos = viewToWorldPos(viewPos);
-        vec3 worldNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.normal);
-        vec3 worldGeoNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.geoNormal);
-
         finalColor.rgb += vec3(BASIC_LIGHT);
         finalColor.rgb += pow(texelFetch(colortex4, ivec2(0), 0).rgb, vec3(2.2)) * NIGHT_VISION_BRIGHTNESS;
         #ifdef IS_IRIS
+            vec3 worldPos = viewToWorldPos(viewPos);
             float eyeRelatedDistance = length(worldPos + relativeEyePosition);
             gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
         #endif
@@ -64,8 +57,8 @@ void main() {
         #ifdef VBGI
             finalColor.rgb += visibilityBitmask.rgb;
         #endif
-        float NdotV = clamp(dot(viewDir, -gbufferData.normal), 0.0, 1.0);
 
+        float NdotV = clamp(dot(viewPos, -gbufferData.normal) * inversesqrt(dot(viewPos, viewPos)), 0.0, 1.0);
         float diffuseWeight = pow(1.0 - gbufferData.smoothness, 5.0);
         vec3 n = vec3(1.5);
         vec3 k = vec3(0.0);
@@ -81,7 +74,7 @@ void main() {
         finalColor.rgb *= diffuseAbsorption + diffuseWeight / PI;
         finalColor.rgb *= gbufferData.albedo.rgb;
     }
-    finalColor += texelFetch(colortex3, texel, 0);
+    finalColor.rgb += texelFetch(colortex3, texel, 0).rgb;
 
     texBuffer3 = finalColor;
 }
