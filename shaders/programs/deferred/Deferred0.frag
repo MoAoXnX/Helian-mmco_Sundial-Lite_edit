@@ -54,7 +54,7 @@ vec2 getPrevCoord(inout vec3 prevWorldPos, vec3 viewPos, vec3 worldGeoNormal, fl
     return prevCoord;
 }
 
-vec4 samplePrevData(vec2 sampleTexelCoord, vec3 prevWorldPos, vec3 currNormal, vec3 geoNormal, out float isPrevValid, out float samplePrevFrames) {
+vec4 samplePrevData(vec2 sampleTexelCoord, vec3 prevWorldPos, vec3 geoNormal, out float isPrevValid, out float samplePrevFrames) {
     ivec2 sampleTexel = ivec2(sampleTexelCoord);
     vec4 prevSampleData = max(vec4(0.0), texelFetch(colortex5, sampleTexel, 0));
     #ifndef VBGI
@@ -90,7 +90,7 @@ vec4 samplePrevData(vec2 sampleTexelCoord, vec3 prevWorldPos, vec3 currNormal, v
     return vec4(prevSampleData);
 }
 
-vec4 prevVisibilityBitmask(vec2 prevCoord, vec3 prevWorldPos, vec3 currNormal, vec3 geoNormal, out float prevFrames) {
+vec4 prevVisibilityBitmask(vec2 prevCoord, vec3 prevWorldPos, vec3 geoNormal, out float prevFrames) {
     vec2 sampleCoord = prevCoord;
     const float offset = 0.25;
     sampleCoord += prevTaaOffset * offset - taaOffset * 0.5 * offset;
@@ -109,7 +109,7 @@ vec4 prevVisibilityBitmask(vec2 prevCoord, vec3 prevWorldPos, vec3 currNormal, v
         for (int j = 0; j < 2; j++) {
             vec2 sampleTexel = sampleCenter + vec2(sampleOffsetX, sampleOffsetY);
             float isSampleValid, samplePrevFrames;
-            vec4 sampleData = samplePrevData(sampleTexel, prevWorldPos, currNormal, geoNormal, isSampleValid, samplePrevFrames);
+            vec4 sampleData = samplePrevData(sampleTexel, prevWorldPos, geoNormal, isSampleValid, samplePrevFrames);
             float weight = (1.0 - abs(sampleTexel.x - prevTexel.x)) * (1.0 - abs(sampleTexel.y - prevTexel.y));
             isSampleValid *= weight;
             samplePrevFrames *= isSampleValid;
@@ -129,46 +129,44 @@ void main() {
     ivec2 texel = ivec2 (gl_FragCoord.st);
     GbufferData gbufferData = getGbufferData(texel, texcoord);
     gbufferData.parallaxOffset *= PARALLAX_DEPTH * 0.2;
-    float depth = textureLod(depthtex1, texcoord, 0.0).x;
-    vec3 viewPos = screenToViewPos(texcoord, depth);
+    vec3 viewPos = screenToViewPos(texcoord, gbufferData.depth);
 
     bool isHand = gbufferData.materialID == MAT_HAND;
     vec3 parallaxViewPos = viewPos;
-    float parallaxDepthOrigin = depth;
+    float parallaxDepthOrigin = gbufferData.depth;
     if (isHand) {
-        parallaxDepthOrigin = depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
+        parallaxDepthOrigin = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
         parallaxViewPos = screenToViewPos(texcoord, parallaxDepthOrigin);
     }
-    float parallaxViewDepth = parallaxViewPos.z + parallaxViewPos.z * gbufferData.parallaxOffset / max(1e-5, dot(parallaxViewPos, -gbufferData.geoNormal));
+    vec3 parallaxViewOffset = parallaxViewPos * gbufferData.parallaxOffset / max(1e-5, dot(parallaxViewPos, -gbufferData.geoNormal));
+    viewPos += parallaxViewOffset;
+    float parallaxViewDepth = parallaxViewPos.z + parallaxViewOffset.z;
     float parallaxDepth = viewToScreenDepth(-parallaxViewDepth);
     float parallaxDepthDiff = (parallaxDepth - parallaxDepthOrigin) * 512.0;
 
     texBuffer3 = vec4(0.0, 0.0, 0.0, parallaxDepthDiff);
 
     #ifdef LOD
-        depth -= float(depth == 1.0) * (1.0 + getLodDepthSolidDeferred(texcoord));
+        gbufferData.depth -= float(gbufferData.depth == 1.0) * (1.0 + getLodDepthSolidDeferred(texcoord));
     #endif
     vec4 prevData = vec4(0.0);
     uint temporalGeometry = 0u;
-    if (abs(depth) < 0.999999) {
+    if (abs(gbufferData.depth) < 0.999999) {
         ivec2 texel = ivec2 (gl_FragCoord.st);
         #ifdef LOD
-            if (depth < 0.0) {
-                viewPos = screenToViewPosLod(texcoord, -depth);
+            if (gbufferData.depth < 0.0) {
+                viewPos = screenToViewPosLod(texcoord, -gbufferData.depth);
             }
         #endif
-        float NdotV = max(dot(viewPos, -gbufferData.geoNormal), 1e-6);
-        viewPos += gbufferData.parallaxOffset * viewPos / NdotV;
         vec3 worldPos = viewToWorldPos(viewPos);
-        vec3 worldNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.normal);
         vec3 worldGeoNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.geoNormal);
 
         vec3 prevWorldPos = worldPos;
         vec2 prevCoord = getPrevCoord(prevWorldPos, viewPos, worldGeoNormal, gbufferData.parallaxOffset, gbufferData.materialID);
 
         float prevFrames;
-        prevData = prevVisibilityBitmask(prevCoord, prevWorldPos, worldNormal, worldGeoNormal, prevFrames);
-        temporalGeometry = packF8D24(prevFrames + 1.0, depth);
+        prevData = prevVisibilityBitmask(prevCoord, prevWorldPos, worldGeoNormal, prevFrames);
+        temporalGeometry = packF8D24(prevFrames + 1.0, gbufferData.depth);
     }
     texBuffer5 = prevData;
     texBuffer6 = temporalGeometry;

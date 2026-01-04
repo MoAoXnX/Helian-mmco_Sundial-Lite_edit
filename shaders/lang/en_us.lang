@@ -34,6 +34,7 @@ screen.AgX=AgX settings
 screen.Exposure=Exposure
 screen.DepthOfField=Depth of field
 screen.ChromaticDispersion=Chromatic dispersion
+screen.Sharpening=Sharpening
 screen.Weather=Weather
 screen.ModSupport=Mod support
 screen.Experimental=Experimental effect
@@ -160,6 +161,10 @@ option.VBGI.comment=Visibility bitmask global illumination
 option.VB_TRACE_COUNT=VB trace count
 option.VB_TRACE_COUNT.comment=Can be considered as ray count in ray tracing
 option.VB_STEPS=VB step count
+option.VB_GI_LENGTH=VBGI trace length
+option.VB_GI_LENGTH.comment=Trace length if VBGI is on. Also affect VBAO. Just as a reference, cannot show exact trace length
+option.VB_AO_LENGTH=VBAO trace length
+option.VB_AO_LENGTH.comment=Trace length if VBGI is off. Just as a reference, cannot show exact trace length
 option.VB_MAX_BLEDED_FRAMES=VB max blended frames
 
 # Atmosphere
@@ -361,6 +366,13 @@ option.CHROMATIC_DISPERSION_G=Green chromatic dispersion
 option.CHROMATIC_DISPERSION_G.comment=Higher value will move green to the outside of screen
 option.CHROMATIC_DISPERSION_B=Blue chromatic dispersion
 option.CHROMATIC_DISPERSION_B.comment=Higher value will move blue to the outside of screen
+# Shapening
+option.FINAL_SHARPENING=Final sharpening
+option.SHARPENING_DENOISE=Sharpening denoise
+option.SHARPENING_DENOISE.comment=Decrease the noise caused by sharpening
+option.SHARPENING_SRENGTH=Sharpening strength
+option.SHARPENING_LIMIT=Sharpening limit
+option.SHARPENING_LIMIT.comment=Limit of change in sharpening, to avoid unnatural result
 
 # Weather
 option.RAIN_PUDDLE=Rain puddle
