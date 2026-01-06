@@ -13,7 +13,7 @@
 //  https://github.com/GeForceLegend/Sundial-Lite
 //  https://www.gnu.org/licenses/gpl-3.0.en.html
 //
-//  DoF stage 1: CoC spread; TAA stage 1: velocity and blend weight
+//  DoF stage 2: CoC spread; TAA stage 1: velocity and blend weight
 //
 
 #extension GL_ARB_gpu_shader5 : enable
@@ -97,19 +97,17 @@ float getClosestDepth(vec2 coord) {
     return closest;
 }
 
-vec3 calculateVelocity(vec3 coord, ivec2 texel, float materialID) {
+vec3 calculateVelocity(vec3 coord, ivec2 texel, float materialID, float parallaxOffset) {
     vec3 view = coord;
-    float parallaxOffset = texelFetch(colortex2, texel, 0).w * PARALLAX_DEPTH * 0.2;
     vec3 geoNormal = decodeNormal(texelFetch(colortex1, texel, 0).zw);
     if (materialID == MAT_HAND) {
         view = projectionToViewPos(view * 2.0 - 1.0);
-        view += view * parallaxOffset / max(dot(geoNormal, -view), 1e-5);
         #ifndef TEMPORAL_IGNORE_HAND_ANIMATION
+            view += view * parallaxOffset / max(dot(geoNormal, -view), 1e-5);
             view -= gbufferModelView[3].xyz * MC_HAND_DEPTH;
             view += gbufferPreviousModelView[3].xyz * MC_HAND_DEPTH;
+            view -= view * parallaxOffset / max(dot(geoNormal, -view), 1e-5);
         #endif
-
-        view -= view * parallaxOffset / max(dot(geoNormal, -view), 1e-5);
         view = viewToProjectionPos(view);
         view = view * 0.5 + 0.5;
     }
@@ -158,24 +156,16 @@ float getDepthConfidenceFactor(vec3 coord, vec3 velocity) {
     return depthDiffFactor;
 }
 
-float circleOfConfusionRadius(vec2 coord, float sampleDepth, float focusDepth) {
+float circleOfConfusionRadius(float sampleDepth, float focusDepth) {
     float circleRadius = 1.0;
-    float materialID = textureLod(colortex0, coord, 0.0).z;
-    float viewDepth = screenToViewDepth(sampleDepth);
-    if (abs(materialID * 255.0 - MAT_HAND) < 0.4) {
+    if (sampleDepth < 0.0) {
         #ifdef HAND_DOF
-            #ifdef CORRECT_DOF_HAND_DEPTH
-                float handDepth = sampleDepth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
-                if (abs(handDepth - 0.5) < 0.5) {
-                    viewDepth = screenToViewDepth(handDepth);
-                }
-            #endif
-            viewDepth = min(focusDepth, viewDepth);
+            sampleDepth = min(focusDepth, sampleDepth);
         #else
             circleRadius = 0.0;
         #endif
     }
-    circleRadius *= (viewDepth - focusDepth) / (viewDepth * (focusDepth - FOCAL_LENGTH)) * APERTURE_DIAMETER_SCALE / MAX_BLUR_RADIUS;
+    circleRadius *= (abs(sampleDepth) - focusDepth) / (abs(sampleDepth) * (focusDepth - FOCAL_LENGTH)) * APERTURE_DIAMETER_SCALE / MAX_BLUR_RADIUS;
     return circleRadius;
 }
 
@@ -190,8 +180,8 @@ void main() {
 
     ivec2 texel = ivec2(gl_FragCoord.st);
     vec4 centerData = texelFetch(colortex3, texel, 0);
-    float centerDepth = textureLod(DOF_DEPTH_TEXTURE, texcoord, 0.0).x;
-    float centerCoC = circleOfConfusionRadius(texcoord, centerDepth, focusDepth);
+    float centerDepth = uintBitsToFloat(textureLod(colortex6, texcoord, 0.0).x);
+    float centerCoC = circleOfConfusionRadius(centerDepth, focusDepth);
     float sampleRadius = clamp(abs(centerCoC), 0.0, 1.0);
 
     #ifdef DEPTH_OF_FIELD
@@ -207,10 +197,10 @@ void main() {
         for (int i = 0; i < COC_SPREAD_SAMPLES; i++) {
             float radius = radius2 * inversesqrt(radius2);
             vec2 sampleCoord = texcoord + texelSize * radius * angle;
-            float sampleDepth = textureLod(DOF_DEPTH_TEXTURE, sampleCoord, 0.0).x;
+            float sampleDepth = uintBitsToFloat(textureLod(colortex6, sampleCoord, 0.0).x);
             angle = goldenRotate * angle;
             radius2 += 1.0 / COC_SPREAD_SAMPLES;
-            float sampleCoC = clamp(abs(circleOfConfusionRadius(sampleCoord, sampleDepth, focusDepth)), 0.0, 1.0);
+            float sampleCoC = clamp(abs(circleOfConfusionRadius(sampleDepth, focusDepth)), 0.0, 1.0);
             if (sampleCoC > radius && sampleDepth <= centerDepth) {
                 sampleRadius = max(sampleRadius, sampleCoC);
                 if (abs(centerCoC) < sampleCoC - radius) {
@@ -229,7 +219,7 @@ void main() {
     vec3 closest = vec3(texcoord, closestDepth);
 
     float materialID = round(texelFetch(colortex0, texel, 0).b * 255.0);
-    vec3 velocity = calculateVelocity(closest, texel, materialID);
+    vec3 velocity = calculateVelocity(closest, texel, materialID, centerData.w * PARALLAX_DEPTH * 0.2);
     velocity = velocity * clamp(0.5 * inversesqrt(dot(velocity.st, velocity.st) + 1e-7), 0.0, 1.0);
 
     float blendWeight = 1.0;
@@ -238,7 +228,7 @@ void main() {
         float depthDiffFactor = getDepthConfidenceFactor(closest, velocity);
 
         blendWeight *= 0.95 - min(0.7, 4.0 * pow(dot(velocity.xy, velocity.xy), 0.25)) * step(closest.z, 0.999999);
-        blendWeight *= step(abs(floor(reprojectCoord.x)) + abs(floor(reprojectCoord.y)), 0.5);
+        blendWeight *= float(all(lessThan(abs(closest.st - vec2(0.5)), vec2(0.5))));
         blendWeight *= depthDiffFactor;
     #endif
 

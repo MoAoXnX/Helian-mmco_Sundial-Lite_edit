@@ -13,60 +13,46 @@
 //  https://github.com/GeForceLegend/Sundial-Lite
 //  https://www.gnu.org/licenses/gpl-3.0.en.html
 //
-//  Gbuffer for transparent terrain
+//  DoF stage 1: Prepare depth texture for DOF
 //
 
-#if MC_VERSION >= 11700
-in vec4 mc_Entity;
-#elif MC_VERSION >= 11500
-layout(location = 11) in vec4 mc_Entity;
-#else
-layout(location = 10) in vec4 mc_Entity;
-#endif
+layout(location = 0) out uint texBuffer6;
 
-out vec4 color;
-out vec4 texlmcoord;
-out vec3 viewPos;
+in vec2 texcoord;
 
-flat out int materialID;
+// #define PARALLAX_DOF
+#define DOF_DEPTH_TEXTURE depthtex1 // [depthtex0 depthtex1]
 
 #include "/settings/GlobalSettings.glsl"
 #include "/libs/Uniform.glsl"
-#include "/libs/Materials.glsl"
-#include "/libs/PhysicsOcean.glsl"
-
-#ifdef PHYSICS_OCEAN
-    out vec3 physics_localPosition;
-    out float physics_localWaviness;
-#endif
+#include "/libs/GbufferData.glsl"
 
 void main() {
-    #ifdef PHYSICS_OCEAN
-        physics_localWaviness = texelFetch(physics_waviness, ivec2(gl_Vertex.xz) - physics_textureOffset, 0).r;
-        physics_localPosition = gl_Vertex.xyz + vec3(0.0, physics_waveHeight(gl_Vertex.xz, PHYSICS_ITERATIONS_OFFSET, physics_localWaviness, physics_gameTime), 0.0);
-
-        viewPos = (gl_ModelViewMatrix * vec4(physics_localPosition, 1.0)).xyz;
-    #else
-        viewPos = (gl_ModelViewMatrix * gl_Vertex).xyz;
-    #endif
-
-    gl_Position = gl_ProjectionMatrix * vec4(viewPos, 1.0);
-
-    color = gl_Color;
-    texlmcoord.st = gl_MultiTexCoord0.st;
-    texlmcoord.pq = gl_MultiTexCoord1.st / 240.0;
-    #ifdef IS_IRIS
-        texlmcoord.pq = clamp(gl_MultiTexCoord1.st / 232.0 - 8.0 / 232.0, 0.0, 1.0);
-    #endif
-
-    materialID = int(mc_Entity.x);
-    #ifdef MOD_WATER_DETECTION
-        if (dot(gl_Color.rgb, vec3(1.0)) < 2.999 && mc_Entity.x < -0.5) {
-            materialID = 8192;
+    ivec2 texel = ivec2(gl_FragCoord.st);
+    float screenDepth = textureLod(DOF_DEPTH_TEXTURE, texcoord, 0.0).x;
+    float materialID = texelFetch(colortex0, texel, 0).z;
+    bool isHand = abs(materialID * 255.0 - MAT_HAND) < 0.4;
+    #ifdef CORRECT_DOF_HAND_DEPTH
+        float handDepth = screenDepth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
+        if (isHand && abs(handDepth - 0.5) < 0.5) {
+            screenDepth = handDepth;
         }
     #endif
-
-    #ifdef TAA
-        gl_Position.xy += taaOffset * gl_Position.w;
+    vec3 viewPos;
+    #ifdef LOD
+        if (screenDepth == 1.0) {
+            viewPos = screenToViewPosLod(texcoord, getLodDepthWater(texcoord));
+        } else
     #endif
+    {
+        viewPos = screenToViewPos(texcoord, screenDepth) * (1.0 - 2.0 * float(isHand));
+        #ifdef PARALLAX_DOF
+            float parallaxOffset = texelFetch(colortex3, texel, 0).w * 0.2 * PARALLAX_DEPTH;
+            vec3 normal = getGeoNormalTexel(texel);
+            viewPos += viewPos * parallaxOffset / max(1e-5, -dot(viewPos, normal));
+        #endif
+    }
+    texBuffer6 = floatBitsToUint(-viewPos.z);
 }
+
+/* DRAWBUFFERS:6 */

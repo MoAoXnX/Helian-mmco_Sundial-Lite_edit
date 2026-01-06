@@ -25,10 +25,9 @@ layout(location = 2) out vec4 gbufferData2;
 #endif
 
 in vec4 color;
-in vec4 viewPos;
 in vec4 texlmcoord;
-in vec3 mcPos;
 in vec4 coordRange;
+in vec3 viewPos;
 
 #define ENTITY_TEXTURE_RESOLUTION 16 // [4 8 16 32 64 128 256 512 1024 2048 4096 8192]
 
@@ -87,19 +86,15 @@ vec2 calcTextureScale(vec2 dCoordDX, vec2 dCoordDY, vec3 position) {
     vec3 dPosDY = dFdy(position);
 
     vec3 normal = cross(dPosDX, dPosDY);
-    normal *= signI(-dot(normal, position)) * inversesqrt(dot(normal, normal));
 
-    vec3 dPosPerpX = cross(normal, dPosDX);
-    vec3 dPosPerpY = cross(dPosDY, normal);
+    vec3 tangentHelper = dPosDY * dCoordDX.x - dPosDX * dCoordDY.x;
+    vec3 tangent = cross(tangentHelper, normal) / dot(tangentHelper, tangentHelper);
 
-    dPosPerpX /= dot(dPosDY, dPosPerpX);
-    dPosPerpY /= dot(dPosDX, dPosPerpY);
+    vec3 bitangentHelper = dPosDY * dCoordDX.y - dPosDX * dCoordDY.y;
+    vec3 bitangent = cross(bitangentHelper, normal) / dot(bitangentHelper, bitangentHelper);
 
-    vec3 tangent = dPosPerpY * dCoordDX.x + dPosPerpX * dCoordDY.x;
-    vec3 bitangent = dPosPerpY * dCoordDX.y + dPosPerpX * dCoordDY.y;
-
-    float tangentLen = length(tangent);
-    float bitangentLen = length(bitangent);
+    float tangentLen = inversesqrt(dot(tangent, tangent));
+    float bitangentLen = inversesqrt(dot(bitangent, bitangent));
 
     vec2 textureScale = vec2(tangentLen, bitangentLen);
 
@@ -110,23 +105,20 @@ mat3 calcTbnMatrix(vec2 dCoordDX, vec2 dCoordDY, vec3 position, out vec2 texture
     vec3 dPosDX = dFdx(position);
     vec3 dPosDY = dFdy(position);
 
-    vec3 normal = normalize(cross(dPosDX, dPosDY));
+    vec3 normal = cross(dPosDX, dPosDY);
 
-    vec3 dPosPerpX = cross(normal, dPosDX);
-    vec3 dPosPerpY = cross(dPosDY, normal);
+    vec3 tangentHelper = dPosDY * dCoordDX.x - dPosDX * dCoordDY.x;
+    vec3 tangent = cross(tangentHelper, normal) / dot(tangentHelper, tangentHelper);
 
-    dPosPerpX /= dot(dPosDY, dPosPerpX);
-    dPosPerpY /= dot(dPosDX, dPosPerpY);
-
-    vec3 tangent = dPosPerpY * dCoordDX.x + dPosPerpX * dCoordDY.x;
-    vec3 bitangent = dPosPerpY * dCoordDX.y + dPosPerpX * dCoordDY.y;
+    vec3 bitangentHelper = dPosDY * dCoordDX.y - dPosDX * dCoordDY.y;
+    vec3 bitangent = cross(bitangentHelper, normal) / dot(bitangentHelper, bitangentHelper);
 
     float tangentLen = inversesqrt(dot(tangent, tangent));
     float bitangentLen = inversesqrt(dot(bitangent, bitangent));
 
-    textureScale = 1.0 / vec2(tangentLen, bitangentLen);
+    textureScale = vec2(tangentLen, bitangentLen);
 
-    return mat3(tangent * tangentLen, bitangent * bitangentLen, normal);
+    return mat3(tangent * tangentLen, bitangent * bitangentLen, normalize(normal));
 }
 
 void main() {
@@ -215,11 +207,8 @@ void main() {
         if (fwidth(coordRange.x) + fwidth(coordRange.y) > 1e-6) {
             fixedCoordRange = vec4(0.0, 0.0, 1.0, 1.0);
         }
-        int textureResolutionFixed = (floatBitsToInt(max(textureScale.x * albedoTexSize.x, textureScale.y * albedoTexSize.y)) & 0x7FC00000) >> 22;
-        textureResolutionFixed = ((textureResolutionFixed >> 1) + (textureResolutionFixed & 1)) - 0x0000007F;
-        textureResolutionFixed = 1 << textureResolutionFixed;
-        float parallaxScale = float(textureResolutionFixed) / ENTITY_TEXTURE_RESOLUTION;
-        vec2 pixelScale = albedoTexelSize * parallaxScale / textureScale;
+        float parallaxScale = ENTITY_TEXTURE_RESOLUTION / max(textureScale.x * albedoTexSize.x, textureScale.y * albedoTexSize.y);
+        vec2 pixelScale = albedoTexSize * textureScale * parallaxScale;
         vec2 quadSize = 1.0 / fixedCoordRange.zw;
         #if (defined ENTITY_PARALLAX && defined PARALLAX) || ANISOTROPIC_FILTERING_QUALITY > 0
             #ifdef ENTITY_PARALLAX
@@ -227,7 +216,7 @@ void main() {
                     float parallaxOffset = 0.0;
                     vec3 parallaxTexNormal = vec3(0.0, 0.0, 1.0);
                     vec3 textureViewer = -viewDir * tbnMatrix;
-                    textureViewer.xy *= textureScale / parallaxScale;
+                    textureViewer.xy *= textureScale * parallaxScale;
                     #ifdef VOXEL_PARALLAX
                         texcoord = perPixelParallax(
                             texcoord, textureViewer, albedoTexSize, albedoTexelSize, fixedCoordRange, parallaxTexNormal, parallaxOffset
@@ -235,7 +224,7 @@ void main() {
                     #else
                         texcoord = calculateParallax(texcoord, textureViewer, fixedCoordRange, quadSize, albedoTexSize, albedoTexelSize, parallaxOffset);
                     #endif
-                    rawData.parallaxOffset = clamp(parallaxOffset / parallaxScale, 0.0, 1.0);
+                    rawData.parallaxOffset = clamp(parallaxOffset * parallaxScale, 0.0, 1.0);
                 #endif
             #endif
         #endif
@@ -320,6 +309,7 @@ void main() {
                 rawData.albedo.rgb = pow(rawData.albedo.rgb, vec3(1.0 + porosityDarkness)) * (1.0 - 0.2 * porosityDarkness);
 
                 vec3 worldNormal = mat3(gbufferModelViewInverse) * rawData.geoNormal;
+                vec3 mcPos = viewToWorldPos(viewPos) + cameraPosition;
                 #if RAIN_PUDDLE == 0 || !defined USE_RAIN_PUDDLE
                 #elif RAIN_PUDDLE == 1
                     wetStrength = (1.0 - rawData.metalness) * clamp(worldNormal.y * 10.0 - 0.1, 0.0, 1.0) * outdoor * rainyStrength * (1.0 - porosity);
