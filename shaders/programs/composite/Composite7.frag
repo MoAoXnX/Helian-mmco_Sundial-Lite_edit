@@ -25,7 +25,7 @@ layout(location = 2) out vec4 texBuffer4;
 in float smoothCenterDepth;
 in vec2 texcoord;
 
-#define DEPTH_OF_FIELD
+// #define DEPTH_OF_FIELD
 #define FOCUS_MODE 0 // [0 1]
 #define HAND_DOF
 #define COC_SPREAD_SAMPLES 10 // [2 3 4 5 6 7 8 9 10 12 14 16 18 20 22 25 30 35 40 45 50 60 70 80 90 100]
