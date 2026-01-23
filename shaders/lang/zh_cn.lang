@@ -46,7 +46,7 @@ screen.ModSupport=Mod支持
 screen.ModSupport.comment=自动检测Mod方块的属性
 screen.Experimental=实验性效果
 profile.Default=默认
-profile.Vanilla=原版
+profile.No_AutoExposure_Mode=无自动曝光模式
 
 # Texture
 option.ENTITY_TEXTURE_RESOLUTION=实体纹理分辨率
