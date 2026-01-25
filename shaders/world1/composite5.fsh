@@ -1,5 +1,6 @@
 #version 330 compatibility
 
 #define THE_END
+#define BASIC_LIGHT vec3(END_FOG_COLOR_R * END_ENVIROMENT_BRIGHTNESS, END_FOG_COLOR_G * END_ENVIROMENT_BRIGHTNESS, END_FOG_COLOR_B * END_ENVIROMENT_BRIGHTNESS)
 
 #include "/programs/composite/Composite5.frag"
