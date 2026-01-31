@@ -258,7 +258,7 @@ vec3 atmosphereScatteringUp(float lightHeight, float sunLightStrength) {
 
 vec3 solidAtmosphereScattering(vec3 color, vec3 worldDir, vec3 skyColor, float worldDepth, float skyLight) {
     const float a = 0.1;
-    vec3 absorption = exp2(-vec3(worldDepth * rainyMieBeta * (1.0 + RF_DENSITY * 3.0 * weatherStrength * weatherStrength) * 10.0 * 1.44269502 * exp2((-WORLD_BASIC_HEIGHT - cameraPosition.y) / 1200.0)));
+    vec3 absorption = exp2(-vec3(worldDepth * rainyMieBeta * (ASF_DENSITY + RF_DENSITY * 3.0 * weatherStrength * weatherStrength) * 10.0 * 1.44269502 * exp2((-WORLD_BASIC_HEIGHT - cameraPosition.y) / 1200.0)));
     vec3 scatteringColor = skyLight * (
         0.1 * skyColor * (1.0 - weatherStrength * (1.0 - RF_SKY_BRIGHTNESS)) +
         sunColor * SUNLIGHT_BRIGHTNESS * miePhase(dot(worldDir, shadowDirection), 0.4, 0.16) * (1.0 - weatherStrength * (1.0 - RF_SUN_BRIGHTNESS))
