@@ -45,8 +45,9 @@ screen.Weather=天气
 screen.ModSupport=Mod支持
 screen.ModSupport.comment=自动检测Mod方块的属性
 screen.Experimental=实验性效果
-profile.Default=默认
-profile.Vanilla=原版
+profile.HelianMMCO=Helian-MMCO (默认)
+profile.Dreamcore=梦核
+profile.RealisticForBuildings=写实 (拍摄建筑)
 
 # Texture
 option.ENTITY_TEXTURE_RESOLUTION=实体纹理分辨率

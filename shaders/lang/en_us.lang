@@ -38,6 +38,9 @@ screen.Sharpening=Sharpening
 screen.Weather=Weather
 screen.ModSupport=Mod support
 screen.Experimental=Experimental effect
+profile.HelianMMCO=Helian-MMCO (Default)
+profile.Dreamcore=Dreamcore
+profile.RealisticForBuildings=Realistic (For Buildings)
 
 # Texture
 option.ENTITY_TEXTURE_RESOLUTION=Entity texture resolution
