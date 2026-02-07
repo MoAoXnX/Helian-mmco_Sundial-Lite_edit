@@ -48,6 +48,7 @@ screen.Experimental=实验性效果
 profile.HelianMMCO=Helian-MMCO (默认)
 profile.Dreamcore=梦核
 profile.RealisticForBuildings=写实 (拍摄建筑)
+profile.Space=太空 (空岛)
 
 # Texture
 option.ENTITY_TEXTURE_RESOLUTION=实体纹理分辨率
@@ -160,7 +161,7 @@ option.NIGHT_BRIGHTNESS=夜晚亮度
 option.NIGHT_VISION_BRIGHTNESS=夜视亮度
 option.SUNLIGHTINRAIN=雨天阳光削减程度
 option.SUNLIGHTINRAIN.comment=雨天阳光亮度降低的程度
-option.BASIC_LIGHT=基础亮度
+option.BASICLIGHT_WORLD0=基础亮度
 option.SKYBRIGHTNESS=天空亮度
 option.SUNLIGHTSPECULARROUGH=阳光反射粗糙度
 # LightColor

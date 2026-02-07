@@ -41,6 +41,7 @@ screen.Experimental=Experimental effect
 profile.HelianMMCO=Helian-MMCO (Default)
 profile.Dreamcore=Dreamcore
 profile.RealisticForBuildings=Realistic (For Buildings)
+profile.Space=Space (SkyBlock)
 
 # Texture
 option.ENTITY_TEXTURE_RESOLUTION=Entity texture resolution
@@ -150,7 +151,7 @@ option.NIGHT_BRIGHTNESS=Night brightness
 option.NIGHT_VISION_BRIGHTNESS=Night vision brightness
 option.SUNLIGHTINRAIN=Sunlight in rain
 option.SUNLIGHTINRAIN.comment=Degree of sunlight brightness reduction in rainy days.
-option.BASIC_LIGHT=Basic light
+option.BASICLIGHT_WORLD0=Basic light
 option.SKYBRIGHTNESS=Sky brightness
 option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
 # LightColor
