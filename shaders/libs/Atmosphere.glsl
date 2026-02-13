@@ -1,6 +1,6 @@
 const vec3 rayleighBeta = vec3(4.2e-6, 10.1e-6, 29.6e-6);
 const float mieBeta = 2.1e-5;
-const float rayLeighScaledHeight = 8500.0;
+const float rayLeighScaledHeight = 10500.0;
 const float mieScaledHeight = 1200.0;
 const vec2 scaledHeight = vec2(rayLeighScaledHeight, mieScaledHeight);
 const float mieG = 0.76;
