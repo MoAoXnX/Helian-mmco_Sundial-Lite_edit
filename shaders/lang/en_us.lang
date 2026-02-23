@@ -13,6 +13,7 @@ screen.Lighting=Lighting
 screen.VisibilityBitmask=Visibility bitmask
 screen.VisibilityBitmask.comment=Used for global illumination and ambient occlusion. Ambient occlusion is always enabled. Global illumination is optional
 screen.Atmosphere=Atmosphere
+screen.ATMOSPHERE_SCATTERING_FOG_OPTIONS=Atmosphere scattering fog option
 screen.RainFog=Rain fog
 screen.VolumetricLight=Volumetric light
 screen.VolumetricFog=Volumetric fog
@@ -179,6 +180,7 @@ option.VOLUMETRIC_LIGHT=Volumetric light
 option.VOLUMETRIC_FOG=Volumetric fog
 option.ATMOSPHERE_SCATTERING_FOG=Atmosphere scattering fog
 option.ASF_DENSITY=Atmosphere scattering fog density
+option.ASF_GROUND_EXTRA_DENSITY=Atmosphere scattering fog ground extra density
 # RainFog
 option.RF_SKY_BRIGHTNESS=Rain fog skylight brightness
 option.RF_SUN_BRIGHTNESS=Rain fog sunlight brightness
