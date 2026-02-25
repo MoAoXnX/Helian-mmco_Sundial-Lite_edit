@@ -9,7 +9,7 @@
 //  \  \_____/  /     \  \____/  /    |  |    \    |   |  |_____/  /    __|  |__    |  |      |  |   |  |_________ 
 //   \_________/       \________/     |__|     \___|   |__________/    |________|   |__|      |__|   |____________|
 //
-//  General Public License v3.0. © 2021-Now GeForceLegend.
+//  General Public License v3.0. Copyright (C) 2026 GeForceLegend.
 //  https://github.com/GeForceLegend/Sundial-Lite
 //  https://www.gnu.org/licenses/gpl-3.0.en.html
 //
@@ -36,7 +36,7 @@ in vec2 texcoord;
         #define MINIMUM_BRIGHTNESS 0.00 // [0.00 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.10]
         #define BLACK_TIGHTNESS 1.0 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
     // AgX settings
-        #define AGX_LOOK 3 // [0 1 2 3 6]
+        #define AGX_LOOK 3 // [0 1 2 3]
         #define AGX_EV_MIN -7.5 // [-15.0 -14.5 -14.0 -13.5 -13.0 -12.5 -12.0 -11.5 -11.0 -10.5 -10.0 -9.5 -9.0 -8.5 -8.0 -7.5 -7.0 -6.5 -6.0 -5.5 -5.0 -4.5 -4.0 -3.5 -3.0 -2.5 -2.0 -1.5 -1.0 -0.5 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10]
         #define AGX_EV_MAX 5.0 // [-15.0 -14.5 -14.0 -13.5 -13.0 -12.5 -12.0 -11.5 -11.0 -10.5 -10.0 -9.5 -9.0 -8.5 -8.0 -7.5 -7.0 -6.5 -6.0 -5.5 -5.0 -4.5 -4.0 -3.5 -3.0 -2.5 -2.0 -1.5 -1.0 -0.5 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10]
 // Exposure
@@ -48,13 +48,23 @@ in vec2 texcoord;
 #include "/libs/Common.glsl"
 #include "/libs/GbufferData.glsl"
 
-vec3 sampleBloom(vec2 coord, float level) {
+vec2 bloomMipEdge(float level) {
+    float expLevel = exp2(-level);
+    return screenSize * (1.0 - expLevel);
+}
+
+vec2 floorMipEdge(vec2 coord, vec2 expEdge, uvec2 floorFactor) {
+    floorFactor << uvec2(lessThan(coord, expEdge));
+    return uintBitsToFloat(floatBitsToUint(coord) & floorFactor);
+}
+
+vec3 sampleBloom(vec2 coord, float level, vec2 minRange, vec2 maxRange) {
     float expLevel = exp2(-level);
     float basicOffset = 1.0 - 2.0 * expLevel;
     vec2 centerCoord = coord * expLevel + vec2(basicOffset);
 
-    vec2 maxTexel = (floor(screenSize * (1.0 - expLevel)) + 0.5) * texelSize;
-    vec2 minTexel = (ceil(screenSize * basicOffset) + 0.5) * texelSize;
+    vec2 maxTexel = (maxRange + 0.5) * texelSize;
+    vec2 minTexel = (minRange + 0.5) * texelSize;
 
     centerCoord = clamp(centerCoord, minTexel, maxTexel);
 
@@ -64,13 +74,37 @@ vec3 sampleBloom(vec2 coord, float level) {
 
 vec3 calculateBloom(vec2 coord) {
     vec3 totalBloom = vec3(0.0);
-    totalBloom += sampleBloom(coord, 1.0) * 0.92;
-    totalBloom += sampleBloom(coord, 2.0) * 0.8464;
-    totalBloom += sampleBloom(coord, 3.0) * 0.778688;
-    totalBloom += sampleBloom(coord, 4.0) * 0.716393;
-    totalBloom += sampleBloom(coord, 5.0) * 0.659081;
-    totalBloom += sampleBloom(coord, 6.0) * 0.606355;
-    totalBloom += sampleBloom(coord, 7.0) * 0.557847;
+    uvec2 screenSizeExp = floatBitsToUint(screenSize) >> 23;
+    vec2 expEdge = uintBitsToFloat(floatBitsToUint(screenSize) & 0x7F800000u);
+    uvec2 floorFactor = 0u - (1u << (150u - screenSizeExp));
+    vec2 maxRange = bloomMipEdge(1.0);
+    vec2 ceilMinRange = vec2(0.0);
+    vec2 floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
+    totalBloom += sampleBloom(coord, 1.0, ceilMinRange, floorMaxRange) * 0.92;
+    ceilMinRange = floorMaxRange + vec2(lessThan(floorMaxRange, maxRange));
+    maxRange = bloomMipEdge(2.0);
+    floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
+    totalBloom += sampleBloom(coord, 2.0, ceilMinRange, floorMaxRange) * 0.8464;
+    ceilMinRange = floorMaxRange + vec2(lessThan(floorMaxRange, maxRange));
+    maxRange = bloomMipEdge(3.0);
+    floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
+    totalBloom += sampleBloom(coord, 3.0, ceilMinRange, floorMaxRange) * 0.778688;
+    ceilMinRange = floorMaxRange + vec2(lessThan(floorMaxRange, maxRange));
+    maxRange = bloomMipEdge(4.0);
+    floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
+    totalBloom += sampleBloom(coord, 4.0, ceilMinRange, floorMaxRange) * 0.716393;
+    ceilMinRange = floorMaxRange + vec2(lessThan(floorMaxRange, maxRange));
+    maxRange = bloomMipEdge(5.0);
+    floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
+    totalBloom += sampleBloom(coord, 5.0, ceilMinRange, floorMaxRange) * 0.659081;
+    ceilMinRange = floorMaxRange + vec2(lessThan(floorMaxRange, maxRange));
+    maxRange = bloomMipEdge(6.0);
+    floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
+    totalBloom += sampleBloom(coord, 6.0, ceilMinRange, floorMaxRange) * 0.606355;
+    ceilMinRange = floorMaxRange + vec2(lessThan(floorMaxRange, maxRange));
+    maxRange = bloomMipEdge(7.0);
+    floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
+    totalBloom += sampleBloom(coord, 7.0, ceilMinRange, floorMaxRange) * 0.557847;
     return pow(totalBloom * (1.0 / 5.084764), vec3(2.2));
 }
 
@@ -186,12 +220,6 @@ vec3 AgX(vec3 val) {
         slope = vec3(SLOPE_R, SLOPE_G, SLOPE_B);
         power = vec3(POWER_R, POWER_G, POWER_B);
         sat = SAT_1;
-    #elif AGX_LOOK == 6
-        // 6
-        offset = vec3(0.03, 0.01, 0);
-        slope = vec3(1.07, 1.08, 1.1);
-        power = vec3(1.5, 1.4, 1.35);
-        sat = 0.8;
     #endif
 
     // ASC CDL

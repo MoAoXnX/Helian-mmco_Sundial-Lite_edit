@@ -51,16 +51,16 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
         vec3 worldPos, vec3 geoNormal, float NdotL, float lightFactor, float smoothness,
         float porosity, float skyLight, inout vec3 shadow, inout vec3 subsurfaceScattering
     ) {
+        basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
+        shadow *= basicSunlight;
+        subsurfaceScattering *= basicSunlight;
         if (true) {
             vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
             float normalFactor = clamp(pow(NdotL, pow2(1.0 - min(0.3, smoothness))), 0.0, 1.0);
-            float basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
             worldPos += geoNormal * ((length(worldPos) * 2e-3 + 2e-2) * (1.0 + sqrt(1.0 - NdotL))) * 4096.0 / realShadowMapResolution;
             vec3 shadowCoord = worldPosToShadowCoord(worldPos);
             NdotL = abs(dot(geoNormal, shadowDirection));
             NdotL = NdotL + (1.0 - NdotL) * clamp(porosity * 255.0 / 191.0 - 64.0 / 191.0, 0.0, 1.0);
-            shadow *= basicSunlight;
-            subsurfaceScattering *= basicSunlight;
             if (any(greaterThan(abs(shadowCoord - vec3(vec2(0.75), 0.5)), vec3(vec2(0.25), 0.5)))) {
                 skyLight = smoothstep(0.8, 0.9, skyLight);
                 shadow *= smoothstep(0.8, 0.9, skyLight) * normalFactor;
@@ -95,11 +95,9 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
                 #endif
 
                 vec3 waterShadowCoord = shadowCoord - vec3(0.0, 0.5, 0.0);
-                vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection);
+                vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection) * lightFactor;
                 shadow *= caustic;
                 subsurfaceScattering *= caustic;
-
-                shadow *= lightFactor;
             }
         }
     }

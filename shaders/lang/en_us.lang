@@ -313,7 +313,6 @@ value.AGX_LOOK.0=Default
 value.AGX_LOOK.1=Golden
 value.AGX_LOOK.2=Punchy
 value.AGX_LOOK.3=Pure
-value.AGX_LOOK.6=Realistic(test)
 option.OFFSET_R=Offset: Red
 option.OFFSET_G=Offset: Green
 option.OFFSET_B=Offset: Blue

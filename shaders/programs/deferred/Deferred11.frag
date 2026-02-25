@@ -9,7 +9,7 @@
 //  \  \_____/  /     \  \____/  /    |  |    \    |   |  |_____/  /    __|  |__    |  |      |  |   |  |_________ 
 //   \_________/       \________/     |__|     \___|   |__________/    |________|   |__|      |__|   |____________|
 //
-//  General Public License v3.0. © 2021-Now GeForceLegend.
+//  General Public License v3.0. Copyright (C) 2026 GeForceLegend.
 //  https://github.com/GeForceLegend/Sundial-Lite
 //  https://www.gnu.org/licenses/gpl-3.0.en.html
 //
@@ -53,6 +53,9 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
         vec3 worldPos, vec3 worldGeoNormal, float NdotL, float viewLength, float lightFactor, float smoothness,
         float porosity, float skyLight, vec2 noise, inout vec3 shadow, inout vec3 subsurfaceScattering
     ) {
+        basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
+        shadow *= basicSunlight;
+        subsurfaceScattering *= basicSunlight;
         if (true) {
             vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
             float normalOffsetLen = (viewLength * 2e-3 + 2e-2) * (1.0 + sqrt(1.0 - NdotL));
@@ -67,7 +70,6 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
             basicShadowCoord.st = basicShadowCoord.st * 0.25 * distortFactor + 0.75;
 
             float normalFactor = clamp(pow(NdotL, pow2(1.0 - smoothness * 0.3)), 0.0, 1.0);
-            float basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
             NdotL = abs(dot(worldGeoNormal, shadowDirection));
             NdotL = NdotL + (1.0 - NdotL) * clamp(porosity * 255.0 / 191.0 - 64.0 / 191.0, 0.0, 1.0);
 
@@ -92,8 +94,6 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                 }
                 offsetX += depthSampleRadius;
             }
-            shadow *= basicSunlight;
-            subsurfaceScattering *= basicSunlight;
             if (depthSum < 8.9999 && all(lessThan(abs(basicShadowCoord - vec3(vec2(0.75), 0.5)), vec3(vec2(0.249), 0.5)))) {
                 float filterRadius = min(avgOcclusionDepth * 80.0 / 9.0, 4.0) + 0.02 * shadowDistance / distortFactor;
 

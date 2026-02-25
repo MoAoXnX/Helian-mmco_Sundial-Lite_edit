@@ -340,7 +340,6 @@ value.AGX_LOOK.0=默认
 value.AGX_LOOK.1=金黄
 value.AGX_LOOK.2=简洁
 value.AGX_LOOK.3=Pure
-value.AGX_LOOK.6=写实(测试)
 option.OFFSET_R=暗部偏移：红色
 option.OFFSET_G=暗部偏移：绿色
 option.OFFSET_B=暗部偏移：蓝色
