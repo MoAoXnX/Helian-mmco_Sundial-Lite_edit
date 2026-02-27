@@ -29,7 +29,7 @@ in vec2 texcoord;
 // Tonemap
     #define TONEMAPPING AgX // [uchimura ACES AgX]
     #define GAMMA 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0]
-    #define SATURATION 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.95 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
+    #define SATURATION 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
     #define COLOR_TEMPERATURE 6500.0 // [1000.0 1200.0 1400.0 1600.0 1800.0 2000.0 2200.0 2400.0 2600.0 2800.0 3000.0 3200.0 3400.0 3600.0 3800.0 4000.0 4250.0 4500.0 4750.0 5000.0 5250.0 5500.0 5750.0 6000.0 6250.0 6500.0 6750.0 7000.0 7250.0 7500.0 7750.0 8000.0 8500.0 9000.0 9500.0 10000.0 10500.0 11000.0 11500.0 12000.0 13000.0 14000.0 15000.0 16000.0 18000.0 20000.0 22000.0 24000.0 28000.0 32000.0 36000.0 40000.0]
     // Uchimura settings
         #define CONTRAST 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
@@ -54,7 +54,7 @@ vec2 bloomMipEdge(float level) {
 }
 
 vec2 floorMipEdge(vec2 coord, vec2 expEdge, uvec2 floorFactor) {
-    floorFactor << uvec2(lessThan(coord, expEdge));
+    floorFactor = floorFactor << uvec2(lessThan(coord, expEdge));
     return uintBitsToFloat(floatBitsToUint(coord) & floorFactor);
 }
 
@@ -76,7 +76,7 @@ vec3 calculateBloom(vec2 coord) {
     vec3 totalBloom = vec3(0.0);
     uvec2 screenSizeExp = floatBitsToUint(screenSize) >> 23;
     vec2 expEdge = uintBitsToFloat(floatBitsToUint(screenSize) & 0x7F800000u);
-    uvec2 floorFactor = 0u - (1u << (150u - screenSizeExp));
+    uvec2 floorFactor = uvec2(0u) - (uvec2(1u) << (150u - screenSizeExp));
     vec2 maxRange = bloomMipEdge(1.0);
     vec2 ceilMinRange = vec2(0.0);
     vec2 floorMaxRange = floorMipEdge(maxRange, expEdge, floorFactor);
