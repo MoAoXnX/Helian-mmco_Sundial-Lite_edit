@@ -53,7 +53,7 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
     ) {
         basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
         shadow *= basicSunlight;
-        subsurfaceScattering *= basicSunlight;
+        subsurfaceScattering *= basicSunlight * clamp(SUBSERFACE_SCATTERING_STRENTGH * 1e+10, 0.0, 1.0);
         if (true) {
             vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
             float normalFactor = clamp(pow(NdotL, pow2(1.0 - min(0.3, smoothness))), 0.0, 1.0);

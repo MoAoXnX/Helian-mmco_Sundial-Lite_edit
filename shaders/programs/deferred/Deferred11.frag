@@ -55,7 +55,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
     ) {
         basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
         shadow *= basicSunlight;
-        subsurfaceScattering *= basicSunlight;
+        subsurfaceScattering *= basicSunlight * clamp(SUBSERFACE_SCATTERING_STRENTGH * 1e+10, 0.0, 1.0);
         if (true) {
             vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
             float normalOffsetLen = (viewLength * 2e-3 + 2e-2) * (1.0 + sqrt(1.0 - NdotL));
