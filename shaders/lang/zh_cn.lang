@@ -38,6 +38,7 @@ screen.ToneMapping=色调映射
 screen.ToneMapping.comment=调整画面的色调与映射曲线
 screen.Uchimura=Uchimura设置
 screen.AgX=AgX设置
+screen.AgX_Pure=AgX调色
 screen.Exposure=曝光
 screen.DepthOfField=景深
 screen.ChromaticDispersion=色散

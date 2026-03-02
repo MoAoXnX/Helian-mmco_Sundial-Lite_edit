@@ -32,6 +32,7 @@ screen.MotionBlur=Motion blur
 screen.ToneMapping=Tone mapping
 screen.Uchimura=Uchimura settings
 screen.AgX=AgX settings
+screen.AgX_Pure=AgX tone
 screen.Exposure=Exposure
 screen.DepthOfField=Depth of field
 screen.ChromaticDispersion=Chromatic dispersion
