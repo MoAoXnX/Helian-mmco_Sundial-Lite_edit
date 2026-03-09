@@ -181,7 +181,8 @@ option.VOLUMETRIC_LIGHT=Volumetric light
 option.VOLUMETRIC_FOG=Volumetric fog
 option.ATMOSPHERE_SCATTERING_FOG=Atmosphere scattering fog
 option.ASF_DENSITY=Atmosphere scattering fog density
-option.ASF_GROUND_EXTRA_DENSITY=Atmosphere scattering fog ground extra density
+option.ASF_GROUND_EXTRA_DENSITY=ASF ground extra density
+option.ASF_GE_DENSITY_INREFL=ASF ground extra density in reflection
 # RainFog
 option.RF_SKY_BRIGHTNESS=Rain fog skylight brightness
 option.RF_SUN_BRIGHTNESS=Rain fog sunlight brightness

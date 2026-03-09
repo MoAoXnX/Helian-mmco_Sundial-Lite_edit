@@ -193,6 +193,7 @@ option.ATMOSPHERE_SCATTERING_FOG=大气散射雾
 option.ATMOSPHERE_SCATTERING_FOG.comment=与体积光或体积雾不同. 如果不喜欢刚进入黑暗室内时的蓝色雾气可以关闭此选项
 option.ASF_DENSITY=大气散射雾密度
 option.ASF_GROUND_EXTRA_DENSITY=大气散射雾地面额外密度
+option.ASF_GE_DENSITY_INREFL=反射中的大气散射雾地面额外密度
 # RainFog
 option.RF_SKY_BRIGHTNESS=雨雾天空光照亮度
 option.RF_SUN_BRIGHTNESS=雨雾阳光光照亮度
