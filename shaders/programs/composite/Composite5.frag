@@ -231,7 +231,7 @@ void main() {
         solidColor.rgb = mix(rawSolidColor, solidColor.rgb, vec3(solidColor.w)) * stainedColor;
 
         float isTargetParticle = 1.0 - float(isTargetNotParticle);
-        vec3 vanillaLight = pow2(gbufferData.lightmap.y) * (skyColorUp + sunColor * SUNLIGHT_BRIGHTNESS) * (1.0 - gbufferData.metalness);
+        vec3 vanillaLight = pow2(gbufferData.lightmap.y) * (skyColorUp + sunColor * SUNLIGHT_BRIGHTNESS) * (1.0 - gbufferData.metalness) * (1.0 - 0.5 * weatherStrength);
         #ifdef IS_IRIS
             float eyeRelatedDistance = length(waterWorldPos + relativeEyePosition);
             gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
@@ -411,7 +411,7 @@ void main() {
         if (weatherLightData > 0.3) {
             float sunlightStrength = 2.0 * weatherLightData - 1.0;
             float basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
-            vec3 weatherLight = sunlightStrength * basicSunlight * sunColor + skyColorUp * 1.5;
+            vec3 weatherLight = sunlightStrength * basicSunlight * sunColor + skyColorUp * (1.0 - 0.7 * weatherStrength);
             float weatherBlendWeight = clamp(weatherData * 1e+10, 0.0, 1.0) * 0.8 + 0.2;
             solidColor.rgb = mix(solidColor.rgb, weatherLight, weatherBlendWeight);
         }
