@@ -404,8 +404,8 @@ void main() {
         currData = screenSpaceVisibiliyBitmask(viewPos, gbufferData.normal, texcoord, viewLengthInv, isOriginNotHand);
         vec4 prevData = texelFetch(colortex5, texel, 0);
         float blendWeight = clamp(1.0 / colorData.w, 0.0, 1.0);
-        currData = mix(prevData, currData, blendWeight);
-
+        float handFixWeight = mix(1.0, blendWeight, isOriginNotHand);
+        currData = mix(prevData, currData, handFixWeight);
         vec3 lightColor = vec3(BASIC_LIGHT);
         lightColor += pow(texelFetch(colortex4, ivec2(0), 0).rgb, vec3(2.2)) * NIGHT_VISION_BRIGHTNESS;
         const float fadeFactor = VANILLA_BLOCK_LIGHT_FADE;
