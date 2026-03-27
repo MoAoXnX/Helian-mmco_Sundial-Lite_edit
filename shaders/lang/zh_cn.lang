@@ -165,6 +165,7 @@ option.SUNLIGHTINRAIN=雨天阳光削减程度
 option.SUNLIGHTINRAIN.comment=雨天阳光亮度降低的程度
 option.BASICLIGHT_WORLD0=基础亮度
 option.SKYBRIGHTNESS=天空亮度
+option.ENVIROMENT_BRIGHTNESS=环境光亮度 (别动这个选项)
 option.SUNLIGHTSPECULARROUGH=阳光反射粗糙度
 # LightColor
 option.LIGHT_BRIGHTNESS=光源亮度

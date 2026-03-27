@@ -155,6 +155,7 @@ option.SUNLIGHTINRAIN=Sunlight in rain
 option.SUNLIGHTINRAIN.comment=Degree of sunlight brightness reduction in rainy days.
 option.BASICLIGHT_WORLD0=Basic light
 option.SKYBRIGHTNESS=Sky brightness
+option.ENVIROMENT_BRIGHTNESS=Enviroment brightness (Don't touch it)
 option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
 # LightColor
 option.LIGHT_BRIGHTNESS=Light brightness
