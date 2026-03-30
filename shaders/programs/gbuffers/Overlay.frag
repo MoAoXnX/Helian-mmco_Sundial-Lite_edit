@@ -17,6 +17,7 @@
 //
 
 layout(location = 0) out vec4 gbufferData0;
+layout(location = 1) out vec4 gbufferData3;
 
 in vec4 color;
 in vec2 texcoord;
@@ -36,7 +37,12 @@ void main() {
         albedo.rgb = log(3.0 * albedo.rgb + 1.0) / 3.0;
     #endif
     if (albedo.w < alphaTestRef) discard;
+    #if MC_VERSION > 12111
+    gbufferData3.rgb = pow(albedo.rgb, vec3(2.2));
+    gbufferData3.a = 1.0;
+    #else
     gbufferData0 = albedo;
+    #endif
 }
 
-/* DRAWBUFFERS:0 */
+/* DRAWBUFFERS:03 */
