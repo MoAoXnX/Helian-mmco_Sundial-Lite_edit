@@ -1,7 +1,8 @@
-# Helian-MMCO (Sundial Lite edit)
+# Helian-MMCO (Sundial lite edit)
 
-Personal simple modification of Sundial-lite. (Helian/Helianthus)
-![6457](https://github.com/user-attachments/assets/9a100ce6-6b0d-4f5f-8e8c-59ab63c65ad8)
+Personal simple modification of Sundial-lite.
+(Helian/Helianthus)
+![6748](https://github.com/user-attachments/assets/620e4f18-51cb-493a-a4b5-cf4138a30aad)
 
 # Sundial Lite
 
