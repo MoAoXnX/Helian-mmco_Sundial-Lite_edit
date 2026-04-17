@@ -105,6 +105,7 @@ vec3 calculateVelocity(vec3 coord, ivec2 texel, float materialID, float parallax
         #ifndef TEMPORAL_IGNORE_HAND_ANIMATION
             view += view * parallaxOffset / max(dot(geoNormal, -view), 1e-5);
             view -= gbufferModelView[3].xyz * MC_HAND_DEPTH;
+            // view = handPrevRotation() * view;
             view += gbufferPreviousModelView[3].xyz * MC_HAND_DEPTH;
             view -= view * parallaxOffset / max(dot(geoNormal, -view), 1e-5);
         #endif
@@ -201,7 +202,7 @@ void main() {
             angle = goldenRotate * angle;
             radius2 += 1.0 / COC_SPREAD_SAMPLES;
             float sampleCoC = clamp(abs(circleOfConfusionRadius(sampleDepth, focusDepth)), 0.0, 1.0);
-            if (sampleCoC > radius && sampleDepth <= centerDepth) {
+            if (sampleCoC > radius && abs(sampleDepth) <= abs(centerDepth)) {
                 sampleRadius = max(sampleRadius, sampleCoC);
                 if (abs(centerCoC) < sampleCoC - radius) {
                     centerCoC = radius - sampleCoC;
