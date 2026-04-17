@@ -404,15 +404,15 @@ void main() {
         currData = screenSpaceVisibiliyBitmask(viewPos, gbufferData.normal, texcoord, viewLengthInv, isOriginNotHand);
         vec4 prevData = texelFetch(colortex5, texel, 0);
         float blendWeight = clamp(1.0 / colorData.w, 0.0, 1.0);
-        float handFixWeight = mix(1.0, blendWeight, isOriginNotHand);
-        currData = mix(prevData, currData, handFixWeight);
+        currData = mix(prevData, currData, blendWeight);
+
         vec3 lightColor = vec3(BASIC_LIGHT);
         lightColor += pow(texelFetch(colortex4, ivec2(0), 0).rgb, vec3(2.2)) * NIGHT_VISION_BRIGHTNESS;
         const float fadeFactor = VANILLA_BLOCK_LIGHT_FADE;
         vec3 blockLight = pow2(1.0 / (fadeFactor - fadeFactor * fadeFactor / (1.0 + fadeFactor) * gbufferData.lightmap.x) - 1.0 / fadeFactor) * commonLightColor;
         lightColor += blockLight;
         #ifdef SHADOW_AND_SKY
-            lightColor += skyLightStrength * (skyColorUp + sunColor) * (0.9 - 0.6 * weatherStrength);
+            lightColor += skyLightStrength * (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - 0.5 * weatherStrength)) * (1.0 - 0.7 * weatherStrength);
         #endif
         lightColor *= (1.0 - currData.w);
         #ifdef VBGI
