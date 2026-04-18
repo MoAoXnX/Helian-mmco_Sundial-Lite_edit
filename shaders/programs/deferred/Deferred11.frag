@@ -13,7 +13,7 @@
 //  https://github.com/GeForceLegend/Sundial-Lite
 //  https://www.gnu.org/licenses/gpl-3.0.en.html
 //
-//  Lighting that need to be calculated in visibility bitmask; Bake depth containing parallax and hand correction for future shader
+//  Lighting that need to be calculated in visibility bitmask; Write current solid depth for GI accumulation
 //
 
 #extension GL_ARB_gpu_shader5 : enable
@@ -218,37 +218,34 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
         vec4 sampleCoord = originCoord + noise.x * stepSize;
         sampleCoord.zw -= 2e-7;
 
-        float maximumThickness = 0.0005 * viewLength + 0.03 * float(materialID == MAT_HAND);
+        float handOffset = float(materialID == MAT_HAND);
+        float maximumThickness = 0.0005 * viewLength + 0.03 * handOffset;
         float maximumThicknessLod = 0.5 * viewLength;
-        float depthMultiplicator = mix(1.0, 1.0 / MC_HAND_DEPTH, float(materialID == MAT_HAND));
-        float baseDepthOffset = 0.5 - 0.5 * depthMultiplicator;
         sampleCoord.zw -= vec2(maximumThickness, maximumThicknessLod);
 
         for (int i = 0; i < SCREEN_SPACE_SHADOW_SAMPLES; i++) {
             if (any(greaterThan(abs(sampleCoord.xy - 0.5), vec2(0.5))) || shadow < 0.01) {
                 break;
             }
-            float sampleDepth = textureLod(depthtex1, sampleCoord.st, 0.0).r;
+            float sampleDepth = uintBitsToFloat(texelFetch(colortex6, ivec2(sampleCoord.st * screenSize), 0).r);
             bool hit;
             #ifdef LOD
-                if (sampleDepth == 1.0) {
-                    float sampleDepthLod = getLodDepthSolidDeferred(sampleCoord.st);
-                    hit = abs(sampleCoord.w - sampleDepthLod) < maximumThicknessLod && sampleDepthLod < 1.0;
+                if (sampleDepth < 0.0) {
+                    hit = abs(sampleCoord.w + sampleDepth) < maximumThicknessLod && sampleDepth > -1.0;
                 }
                 else
             #endif
             {
-                float sampleParallaxOffset = textureLod(colortex3, sampleCoord.st, 0.0).w / 512.0 + baseDepthOffset;
-                sampleDepth = sampleDepth * depthMultiplicator + sampleParallaxOffset;
+                sampleDepth -= handOffset;
                 hit = abs(sampleCoord.z - sampleDepth) < maximumThickness && sampleDepth < 1.0;
                 if (hit) {
                     vec2 sampleTexelCoord = sampleCoord.xy * screenSize + 0.5;
                     vec2 sampleTexel = floor(sampleTexelCoord);
-                    vec4 sh = textureGather(depthtex1, sampleTexel * texelSize, 0);
+                    vec4 sh = uintBitsToFloat(textureGather(colortex6, sampleTexel * texelSize, 0));
+                    sh -= handOffset;
                     vec2 fpc = sampleTexelCoord - sampleTexel;
                     vec2 x = mix(sh.wx, sh.zy, vec2(fpc.x));
                     float sampleDepth = mix(x.x, x.y, fpc.y);
-                    sampleDepth = sampleDepth * depthMultiplicator + sampleParallaxOffset;
                     hit = abs(sampleCoord.z - sampleDepth) < maximumThickness;
                 }
             }
@@ -284,6 +281,7 @@ void main() {
     GbufferData gbufferData = getGbufferData(texel, texcoord);
     vec3 viewPos;
     vec3 viewPosNoPOM;
+    float depthWithParallax = uintBitsToFloat(texelFetch(colortex6, texel, 0).x);
     #ifdef LOD
         if (gbufferData.depth == 1.0) {
             gbufferData.depth = getLodDepthSolidDeferred(texcoord);
@@ -293,10 +291,11 @@ void main() {
         } else
     #endif
     {
+        float depthWithHand = gbufferData.depth;
         if (gbufferData.materialID == MAT_HAND) {
-            gbufferData.depth = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
+            depthWithHand = depthWithHand / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
         }
-        float depthWithHand = gbufferData.depth - 1e-7;
+        depthWithHand = depthWithHand - 1e-7;
         vec3 viewDirection = vec3(texcoord * 2.0 - 1.0, gbufferProjectionInverse[3].z);
         #ifdef TAA
             viewDirection.xy -= taaOffset;
@@ -304,16 +303,18 @@ void main() {
         viewDirection.xy = vec2(gbufferProjectionInverse[0].x, gbufferProjectionInverse[1].y) * viewDirection.xy + gbufferProjectionInverse[3].xy;
         depthWithHand = depthWithHand * 2.0 - 1.0;
         viewPosNoPOM = viewDirection / (gbufferProjectionInverse[2].w * depthWithHand + gbufferProjectionInverse[3].w);
-        float parallaxData = texelFetch(colortex3, texel, 0).w;
-        depthWithHand += parallaxData / 512.0 * 2.0;
-        gbufferData.depth += parallaxData / 512.0;
-        viewPos = viewDirection / (gbufferProjectionInverse[2].w * depthWithHand + gbufferProjectionInverse[3].w);
+        depthWithHand = depthWithParallax - float(depthWithParallax > 1.0);
+        viewPos = viewDirection / (gbufferProjectionInverse[2].w * (depthWithHand * 2.0 - 1.0) + gbufferProjectionInverse[3].w);
     }
-    texBuffer6 = floatBitsToUint(gbufferData.depth + float(gbufferData.materialID == MAT_HAND));
+    float blendedFrames = texelFetch(colortex3, texel, 0).w;
+    texBuffer6 = packF8D24(blendedFrames, gbufferData.depth);
+    if (texel.y < 1 && texel.x < 4) {
+        texBuffer6 = floatBitsToUint(depthWithParallax);
+    }
     vec3 worldPos = viewToWorldPos(viewPosNoPOM);
     vec3 worldDir = normalize(worldPos - gbufferModelViewInverse[3].xyz);
 
-    vec4 finalColor = vec4(vec3(0.0), unpackF8D24(texelFetch(colortex6, texel, 0).x).x);
+    vec4 finalColor = vec4(vec3(0.0), blendedFrames);
 
     if (abs(gbufferData.depth) < 1.0) {
         vec3 worldNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.normal);
