@@ -1,8 +1,7 @@
-# Helian-MMCO (Sundial lite edit)
+# Helian-MMCO (Sundial Lite edit)
 
-Personal simple modification of Sundial-lite.
-(Helian/Helianthus)
-![6748](https://github.com/user-attachments/assets/620e4f18-51cb-493a-a4b5-cf4138a30aad)
+Personal simple modification of Sundial-lite. (Helian/Helianthus)
+![6457](https://github.com/user-attachments/assets/9a100ce6-6b0d-4f5f-8e8c-59ab63c65ad8)
 
 # Sundial Lite
 
@@ -19,5 +18,3 @@ Sundial Lite is using [visibility bitmask from shadertoy (CC0)](https://www.shad
 Optifine released after 04.12.2019 (1.8.9 L5) is supported.
 
 Iris above 1.7.0 may be supported with some artifacts, not tested yet.
-
-**Currently most latest Iris is not compatible due to [IrisShaders/Iris#3018](https://github.com/IrisShaders/Iris/issues/3018). If this is fixed, I'll remove this line.**

@@ -27,9 +27,9 @@ vec3 anisotropicOffsetLod(vec2 albedoTexSize, vec2 atlasTexelSize, vec2 texGradX
     float v = t + D;
     float l = max(0.0, -0.5 * log2(v));
 
-    vec2 A = vec2(qd[0][1], qd[0][0] - V);
+    vec2 A = vec2(qd[0][1], V - qd[0][0]);
     A *= inversesqrt(V * dot(A, A)) / ANISOTROPIC_FILTERING_QUALITY;
-    A = max(vec2(0.0), abs(A)) * atlasTexelSize * quadSize;
+    A = signMul(max(vec2(0.0), abs(A)), A) * atlasTexelSize * quadSize;
     return vec3(A, l);
 }
 
@@ -60,7 +60,7 @@ vec4 anisotropicFilter(vec2 coord, vec2 offset, float lod, vec4 coordRange, vec2
 #ifdef MC_NORMAL_MAP
     vec4 heightGather(sampler2D normalSampler, vec2 coord, vec2 coord00, vec4 coordRange, vec2 quadTexelSize, vec2 normalTexSize) {
         ivec2 texel00 = ivec2(coord00);
-        ivec2 texel11 = ivec2(clampCoordRange(coord + 0.499 * quadTexelSize, coordRange) * normalTexSize);
+        ivec2 texel11 = ivec2(clampCoordRange(coord + quadTexelSize, coordRange) * normalTexSize);
         vec4 sh = vec4(
             texelFetch(normalSampler, ivec2(texel00.x, texel11.y), 0).a,
             texelFetch(normalSampler, texel11, 0).a,
@@ -72,7 +72,7 @@ vec4 anisotropicFilter(vec2 coord, vec2 offset, float lod, vec4 coordRange, vec2
     }
 
     float bilinearHeightSample(sampler2D normalSampler, vec2 coord, vec4 coordRange, vec2 quadTexelSize, vec2 normalTexSize) {
-        vec2 coord00 = clampCoordRange(coord - 0.499 * quadTexelSize, coordRange) * normalTexSize;
+        vec2 coord00 = clampCoordRange(coord - quadTexelSize, coordRange) * normalTexSize;
         vec4 sh = heightGather(normalSampler, coord, coord00, coordRange, quadTexelSize, normalTexSize);
         vec2 fpc = fract(coord00);
         vec2 x = mix(sh.wx, sh.zy, vec2(fpc.x));
@@ -82,7 +82,7 @@ vec4 anisotropicFilter(vec2 coord, vec2 offset, float lod, vec4 coordRange, vec2
     vec3 heightBasedNormal(sampler2D normalSampler, vec2 coord, vec4 coordRange, vec2 quadTexelSize, vec2 normalTexSize, vec2 pixelScale) {
         vec2 tileCoord = (coord - coordRange.xy) / coordRange.zw;
         vec2 coord00 = clampCoordRange(tileCoord - 0.499 * quadTexelSize, coordRange) * normalTexSize;
-        vec4 sh = heightGather(normalSampler, tileCoord, coord00, coordRange, quadTexelSize, normalTexSize);
+        vec4 sh = heightGather(normalSampler, tileCoord, coord00, coordRange, 0.499 * quadTexelSize, normalTexSize);
 
         vec2 fpc = fract(coord00);
         sh.y = sh.x + sh.z - sh.w - sh.y;
@@ -115,7 +115,7 @@ vec4 anisotropicFilter(vec2 coord, vec2 offset, float lod, vec4 coordRange, vec2
     }
 
     vec2 perPixelParallax(
-        vec2 coord, vec3 viewVector, vec2 albedoTexSize, vec2 atlasTexelSize, vec4 coordRange,
+        vec2 coord, vec3 viewPos, mat3 tbnMatrix, vec2 textureScale, vec2 albedoTexSize, vec2 atlasTexelSize, vec4 coordRange,
         inout vec3 parallaxTexNormal, inout float parallaxOffset
     ) {
         vec2 parallaxCoord = coord;
@@ -124,7 +124,8 @@ vec4 anisotropicFilter(vec2 coord, vec2 offset, float lod, vec4 coordRange, vec2
         sampleHeight += clamp(1.0 - sampleHeight * 1e+10, 0.0, 1.0);
 
         if (sampleHeight < 0.999) {
-            vec3 stepDir = viewVector;
+            vec3 stepDir = viewPos * tbnMatrix;
+            stepDir.xy *= textureScale;
             stepDir.xy *= PARALLAX_DEPTH * albedoTexSize * 0.2;
             stepDir = normalize(stepDir);
             stepDir.z = -stepDir.z;
@@ -165,15 +166,17 @@ vec4 anisotropicFilter(vec2 coord, vec2 offset, float lod, vec4 coordRange, vec2
     }
 
     vec2 calculateParallax(
-        vec2 coord, vec3 viewVector, vec4 coordRange, vec2 quadSize, vec2 albedoTexSize, vec2 albedoTexelSize, inout float parallaxOffset
+        vec2 coord, vec3 viewPos, mat3 tbnMatrix, vec2 textureScale, vec4 coordRange, vec2 quadSize, vec2 albedoTexSize, vec2 albedoTexelSize, inout float parallaxOffset
     ) {
-        vec2 quadTexelSize = albedoTexelSize * quadSize;
+        vec2 quadTexelSize = 0.499 * albedoTexelSize * quadSize;
 
         vec3 parallaxCoord = vec3(coord, 1.0);
 
         vec2 firstCoord = (coord - coordRange.xy) * quadSize;
         #ifdef SMOOTH_PARALLAX
-            float startHeight = bilinearHeightSample(normals, firstCoord, coordRange, quadTexelSize, albedoTexSize);
+            vec2 coord00 = clampCoordRange(firstCoord - quadTexelSize, coordRange) * albedoTexSize;
+            vec4 sh = heightGather(normals, firstCoord, coord00, coordRange, quadTexelSize, albedoTexSize);
+            float startHeight = dot(sh, vec4(0.25));
         #else
             float startHeight = textureLod(normals, parallaxCoord.st, 0.0).a;
             startHeight += clamp(1.0 - startHeight * 1e+10, 0.0, 1.0);
@@ -181,6 +184,8 @@ vec4 anisotropicFilter(vec2 coord, vec2 offset, float lod, vec4 coordRange, vec2
 
         if (startHeight < 1.0) {
             parallaxCoord.st = firstCoord;
+            vec3 viewVector = viewPos * tbnMatrix;
+            viewVector.xy *= textureScale;
             vec3 stepSize = viewVector / (PARALLAX_QUALITY * abs(viewVector.z));
             stepSize.xy *= PARALLAX_DEPTH * 0.2 * quadSize;
             float stepScale = 2.0 / PARALLAX_QUALITY;
