@@ -28,7 +28,7 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
         #ifdef WATER_CAUSTIC
             float waterShadow = textureLod(shadowtex0, waterShadowCoord, 0.0);
             if (waterShadow < 1.0) {
-                vec3 casuticData = textureLod(shadowcolor0, waterShadowCoord.st, 0.0).xyz;
+                vec4 casuticData = textureLod(shadowcolor0, waterShadowCoord.st, 0.0);
                 float waterHeight = (1.0 - casuticData.z) * 510.0 - 128.0 + casuticData.y * 2.0;
 
                 float waterShadowHeightInv = inversesqrt(0.4375 + 0.5625 * lightDir.y * lightDir.y);
@@ -36,7 +36,7 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
                 float waterDepth = (waterHeight - mcPos.y) * waterShadowHeightInv;
 
                 float causticStrength = casuticData.r;
-                causticStrength = mix(causticStrength * 4.0, 1.0, clamp(exp(-0.3 * waterDepth), 0.0, 1.0));
+                causticStrength = mix(causticStrength * 4.0, 1.0, clamp(exp(-0.3 * waterDepth), 0.0, 1.0)) * casuticData.w;
                 caustic = causticStrength * clamp(waterFogAbsorption(waterDepth), 0.0, 1.0);
                 caustic = mix(caustic, vec3(1.0), vec3(waterShadow));
             }
@@ -48,8 +48,8 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
     float basicSunlight = (1.0 - sqrt(0)) * 9.5 * SUNLIGHT_BRIGHTNESS;
 
     void singleSampleShadow(
-        vec3 worldPos, vec3 geoNormal, float NdotL, float lightFactor, float smoothness,
-        float porosity, float skyLight, inout vec3 shadow, inout vec3 subsurfaceScattering
+        vec3 worldPos, vec3 geoNormal, float NdotL, float smoothness, float porosity,
+        float skyLight, inout vec3 shadow, inout vec3 subsurfaceScattering
     ) {
         basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
         shadow *= basicSunlight;
@@ -95,6 +95,10 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
                 #endif
 
                 vec3 waterShadowCoord = shadowCoord - vec3(0.0, 0.5, 0.0);
+                float lightFactor = 1.0;
+                #ifdef LIGHT_LEAKING_FIX
+                    lightFactor = clamp(skyLight * 10.0 + isEyeInWater, 0.0, 1.0);
+                #endif
                 vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection) * lightFactor;
                 shadow *= caustic;
                 subsurfaceScattering *= caustic;

@@ -41,7 +41,7 @@ vec3 sampleBloomX(vec2 coord) {
             sampleTexel0.x = min(maxTexelX, sampleTexel0.x + 1);
             sampleTexel1.x = max(minTexelX, sampleTexel1.x - 1);
             totalColor += (texelFetch(colortex4, sampleTexel0, 0).rgb + texelFetch(colortex4, sampleTexel1, 0).rgb) * weights[i];
-         }
+        }
         result = totalColor;
     }
     return result;
@@ -50,7 +50,7 @@ vec3 sampleBloomX(vec2 coord) {
 vec3 smoothMotionBlur(vec2 coord) {
     vec3 totalColor = textureLod(colortex3, coord, 0.0).rgb;
     #ifdef MOTION_BLUR
-        vec2 velocity = textureLod(colortex1, coord, 0.0).xy;
+        vec2 velocity = textureLod(colortex5, coord, 0.0).xy;
         vec2 screenVelocity = velocity * screenSize;
         if (dot(screenVelocity, screenVelocity) > 1.0) {
             float screenScale = max(screenSize.x, screenSize.y);

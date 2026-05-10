@@ -234,8 +234,8 @@ vec3 Transform_Vz0Qz0(vec2 v, vec4 q)
     return vec3(v, 0.0) + 2.0 * (b * q.yxw);
 }
 
-vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord, float viewLengthInv, float isOriginNotHand) {
-    vec3 viewDir = -viewLengthInv * originViewPos;
+vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord, float isOriginNotHand) {
+    vec3 viewDir = -normalize(originViewPos);
     vec4 Q_toV = GetQuaternion(viewDir);
     vec4 Q_fromV = Q_toV * vec4(vec3(-1.0), 1.0);
     vec3 normalVVS = Transform_Qz0(normal, Q_fromV);
@@ -382,13 +382,11 @@ void main() {
         gbufferData.depth -= isHand;
         viewPos = screenToViewPos(texcoord, gbufferData.depth - 1e-7);
     }
-    viewPos += gbufferData.geoNormal * 3e-3;
     vec4 currData = vec4(0.0);
     vec4 colorData = texelFetch(colortex3, texel, 0);
     if (abs(gbufferData.depth) < 1.0) {
-        float viewLengthInv = inversesqrt(dot(viewPos, viewPos));
         // Merge some vec3s into floats to save registers
-        float NdotV = clamp(dot(viewPos, -gbufferData.normal) * viewLengthInv, 0.0, 1.0);
+        float NdotV = clamp(dot(viewPos, -gbufferData.normal) * inversesqrt(dot(viewPos, viewPos)), 0.0, 1.0);
         vec3 plantSkyNormal = mat3(gbufferModelViewInverse) * gbufferData.normal;
         if (gbufferData.materialID == MAT_GRASS) {
             plantSkyNormal = vec3(0.0, 1.0, 0.0);
@@ -401,7 +399,8 @@ void main() {
             gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
         #endif
 
-        currData = screenSpaceVisibiliyBitmask(viewPos, gbufferData.normal, texcoord, viewLengthInv, isOriginNotHand);
+        viewPos += gbufferData.geoNormal * 3e-3;
+        currData = screenSpaceVisibiliyBitmask(viewPos, gbufferData.normal, texcoord, isOriginNotHand);
         vec4 prevData = texelFetch(colortex5, texel, 0);
         float blendWeight = clamp(1.0 / colorData.w, 0.0, 1.0);
         currData = mix(prevData, currData, blendWeight);

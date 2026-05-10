@@ -210,8 +210,7 @@ void main() {
                 if (solidDepth> 0.999999)
                     solidColor.rgb += endStars(worldDir);
             #else
-                vec4 intersectionData = planetIntersectionData(gbufferModelViewInverse[3].xyz, worldDir);
-                float atmosphereDepth = mix(waterDistance * (ASF_GROUND_EXTRA_DENSITY + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 1000.0 - intersectionData.w * 500.0, step(0.999999, solidDepth));
+                float atmosphereDepth = mix(waterDistance * (1.0 + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 1600.0, step(0.999999, solidDepth));
                 #if defined ATMOSPHERE_SCATTERING_FOG && defined SHADOW_AND_SKY
                     solidColor.rgb = solidAtmosphereScattering(solidColor.rgb, worldDir, skyColorUp, atmosphereDepth, gbufferData.lightmap.y);
                 #endif
@@ -244,15 +243,11 @@ void main() {
         #ifdef SHADOW_AND_SKY
             float NdotL = clamp(dot(worldNormal, shadowDirection) + isTargetParticle, 0.0, 1.0);
             if (NdotL > 0.0) {
-                float shadowLightFactor = 1.0;
-                #ifdef LIGHT_LEAKING_FIX
-                    shadowLightFactor = clamp(gbufferData.lightmap.y * 10.0, 0.0, 1.0);
-                #endif
                 vec3 shadow = vec3(1.0);
                 vec3 subsurfaceScattering = vec3(float(gbufferData.porosity > 64.5 / 255.0));
                 singleSampleShadow(
-                    waterWorldPos, mat3(gbufferModelViewInverse) * gbufferData.geoNormal, NdotL, shadowLightFactor,
-                    gbufferData.smoothness, gbufferData.porosity, gbufferData.lightmap.y, shadow, subsurfaceScattering
+                    waterWorldPos, mat3(gbufferModelViewInverse) * gbufferData.geoNormal, NdotL, gbufferData.smoothness,
+                    gbufferData.porosity, gbufferData.lightmap.y, shadow, subsurfaceScattering
                 );
                 shadow *= (1.0 - gbufferData.metalness) * gbufferData.albedo.rgb * gbufferData.albedo.w * isTargetParticle + sunlightSpecular(
                     waterWorldDir, shadowDirection, worldNormal, gbufferData.smoothness * 0.995, NdotL, LdotH, f0, vec3(1.0)
