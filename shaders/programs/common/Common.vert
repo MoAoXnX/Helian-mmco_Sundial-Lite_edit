@@ -26,10 +26,6 @@ out vec2 texcoord;
     out float smoothCenterDepth;
 #endif
 
-#ifdef PREV_HAND_ANIMATION
-    out vec2 prevHandAnimation;
-#endif
-
 #define DOF_FOCUS_TEXTURE 2 // [0 1 2]
 
 #include "/settings/GlobalSettings.glsl"
@@ -42,8 +38,10 @@ out vec2 texcoord;
 #endif
 
 #ifdef PREV_HAND_ANIMATION
+    out vec2 prevHandAnimation;
+    out vec2 temporalHandRotation;
+
     #include "/libs/Common.glsl"
-    #include "/libs/GbufferData.glsl"
 #endif
 
 void main() {
@@ -90,6 +88,7 @@ void main() {
         float blendFactor = exp2(-20.0 * frameTime);
         float currHandRotationX = mix(currHeadRotationX, prevHandRotationX + float(abs(currHeadRotationX - prevHandRotationX) > PI) * signMul(2.0 * PI, currHeadRotationX), blendFactor);
         float currHandRotationY = mix(currHeadRotationY, prevHandRotationY, blendFactor);
+        temporalHandRotation = vec2(currHandRotationX, currHeadRotationY);
 
         float prevHeadRotationX = atan(gbufferPreviousModelView[0].x, -gbufferPreviousModelView[2].x);
         float prevHeadRotationY = asin(clamp(gbufferPreviousModelView[1].z, -1.0, 1.0));

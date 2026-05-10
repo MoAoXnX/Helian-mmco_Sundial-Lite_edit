@@ -50,7 +50,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
     }
 
     void percentageCloserSoftShadow(
-        vec3 worldPos, vec3 worldGeoNormal, float NdotL, float viewLength, float lightFactor, float smoothness,
+        vec3 worldPos, vec3 worldGeoNormal, float NdotL, float viewLength, float smoothness,
         float porosity, float skyLight, vec2 noise, inout vec3 shadow, inout vec3 subsurfaceScattering
     ) {
         basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
@@ -98,6 +98,10 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                 float filterRadius = min(avgOcclusionDepth * 80.0 / 9.0, 4.0) + 0.02 * shadowDistance / distortFactor;
 
                 vec3 waterShadowCoord = basicShadowCoord - vec3(0.0, 0.5, 0.0);
+                float lightFactor = 1.0;
+                #ifdef LIGHT_LEAKING_FIX
+                    lightFactor = clamp(skyLight * 10.0 + isEyeInWater, 0.0, 1.0);
+                #endif
                 vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection) * lightFactor;
                 shadow *= caustic;
                 subsurfaceScattering *= caustic;
@@ -291,8 +295,9 @@ void main() {
         } else
     #endif
     {
-        if (gbufferData.materialID == MAT_HAND) {
-            gbufferData.depth = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
+        float handDepth = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
+        if (gbufferData.materialID == MAT_HAND && abs(handDepth - 0.5) < 0.5) {
+            gbufferData.depth = handDepth;
         }
         float depthWithHand = gbufferData.depth - 1e-7;
         vec3 viewDirection = vec3(texcoord * 2.0 - 1.0, gbufferProjectionInverse[3].z);
@@ -305,18 +310,17 @@ void main() {
         depthWithHand = depthWithParallax - float(depthWithParallax > 1.0);
         viewPos = viewDirection / (gbufferProjectionInverse[2].w * (depthWithHand * 2.0 - 1.0) + gbufferProjectionInverse[3].w);
     }
-    float blendedFrames = texelFetch(colortex3, texel, 0).w;
+    float blendedFrames = gbufferData.albedo.w * 255.0;
     texBuffer6 = packF8D24(blendedFrames, gbufferData.depth);
     if (texel.y < 1 && texel.x < 4) {
         texBuffer6 = floatBitsToUint(depthWithParallax);
     }
-    vec3 worldPos = viewToWorldPos(viewPosNoPOM);
-    vec3 worldDir = normalize(worldPos - gbufferModelViewInverse[3].xyz);
+    vec3 worldPos = mat3(gbufferModelViewInverse) * viewPosNoPOM;
 
     vec4 finalColor = vec4(vec3(0.0), blendedFrames);
-
     if (abs(gbufferData.depth) < 1.0) {
-        vec3 worldNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.normal);
+        worldPos += gbufferModelViewInverse[3].xyz;
+        vec3 viewDir = normalize(viewPosNoPOM);
         vec3 worldGeoNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.geoNormal);
 
         finalColor.rgb += gbufferData.emissive * PBR_BRIGHTNESS * PI;
@@ -331,13 +335,13 @@ void main() {
                 gbufferData.metalness = step(229.5 / 255.0, gbufferData.metalness);
             #endif
             f0 = mix(f0, gbufferData.albedo.rgb, gbufferData.metalness);
-            float NdotV = clamp(dot(worldDir, -worldNormal), 0.0, 1.0);
+            float NdotV = clamp(dot(viewDir, -gbufferData.normal), 0.0, 1.0);
             vec3 diffuseAbsorption = (1.0 - gbufferData.metalness) * diffuseAbsorptionWeight(NdotV, gbufferData.smoothness, f0, f82);
 
             vec3 shadow = sunColor;
-            float NdotL = clamp(dot(worldNormal, shadowDirection), 0.0, 1.0);
+            float NdotL = clamp(dot(gbufferData.normal, viewShadowDirection), 0.0, 1.0);
             vec3 shadowDiffuse = gbufferData.albedo.rgb * diffuseAbsorption;
-            vec3 shadowSpecular = sunlightSpecular(worldDir, shadowDirection, worldNormal, gbufferData.smoothness * 0.995, NdotL, NdotV, f0, f82);
+            vec3 shadowSpecular = sunlightSpecular(viewDir, viewShadowDirection, gbufferData.normal, gbufferData.smoothness * 0.995, NdotL, NdotV, f0, f82);
             vec2 noise = blueNoiseTemporal(texcoord).xy;
             float viewLength = inversesqrt(dot(viewPos, viewPos));
             #ifdef SCREEN_SPACE_SHADOW
@@ -354,19 +358,20 @@ void main() {
             #endif
             #ifdef PCSS
                 percentageCloserSoftShadow(
-                    worldPos, worldGeoNormal, NdotL, 1.0 / viewLength, shadowLightFactor, gbufferData.smoothness,
+                    worldPos, worldGeoNormal, NdotL, 1.0 / viewLength, gbufferData.smoothness,
                     gbufferData.porosity, gbufferData.lightmap.y, noise, shadow, subsurfaceScattering
                 );
             #else
                 singleSampleShadow(
-                    worldPos, worldGeoNormal, NdotL, shadowLightFactor, gbufferData.smoothness,
-                    gbufferData.porosity, gbufferData.lightmap.y, shadow, subsurfaceScattering
+                    worldPos, worldGeoNormal, NdotL, gbufferData.smoothness, gbufferData.porosity,
+                    gbufferData.lightmap.y, shadow, subsurfaceScattering
                 );
             #endif
             shadow += subsurfaceScattering;
             finalColor.rgb += shadow;
         }
         else {
+            vec3 worldDir = normalize(worldPos);
             finalColor.rgb = renderSun(worldDir, sunDirection, vec3(300.0)) + gbufferData.albedo.rgb * 2.0;
     #endif
     }

@@ -45,8 +45,6 @@ profile.RealisticForBuildings=Realistic (For Buildings)
 profile.Space=Space (SkyBlock)
 
 # Texture
-option.ENTITY_TEXTURE_RESOLUTION=Entity texture resolution
-option.ENTITY_TEXTURE_RESOLUTION.comment=Set to resolution of current resource pack. Entity texture resolution cannot set to Auto. Affect entity parallax
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter
 option.ANISOTROPIC_FILTERING_QUALITY.comment=Use this but not settings in Optifine / graphics card drivers. Settings in Optifine / graphics card drivers will cause issues
 value.ANISOTROPIC_FILTERING_QUALITY.0=off
@@ -88,6 +86,8 @@ option.SMOOTH_PARALLAX.comment=Smoothes parallax. Will be overwritten with voxel
 option.VOXEL_PARALLAX=Voxel parallax
 option.VOXEL_PARALLAX.comment=Using voxel stepping in parallax for exact result. Will overwrite smooth parallax, works well on low resolution packs
 option.ENTITY_PARALLAX=Entity parallax
+option.ENTITY_TEXTURE_RESOLUTION=Entity texture resolution
+option.ENTITY_TEXTURE_RESOLUTION.comment=Set to resolution of current resource pack. Entity texture resolution cannot set to Auto. Affect entity parallax
 option.PARALLAX_DEPTH=Parallax depth
 option.PARALLAX_QUALITY=Parallax quality
 option.PARALLAX_QUALITY.comment=Improves parallax quality with more performance cost. Improves the "pane edge" effect
@@ -386,6 +386,7 @@ option.RIPPLE_SCALE=Ripple scale
 option.RIPPLE_STRENGTH=Ripple strength
 option.RIPPLE_FADE_SPEED=Ripple fade speed
 option.RIPPLE_FADE_SPEED.comment=Ripple strength fade speed when far away
+option.RAIN_PUDDLE_SCALE=Rain puddle scale
 option.RAIN_DROP_SIZE=Rain drop size
 option.RAIN_DROP_SIZE.comment=Only affect rain drop width, but not its length
 option.RAIN_DROP_AMOUNT=Rain drop amount
@@ -400,7 +401,7 @@ option.TEMPORAL_IGNORE_HAND_ANIMATION.comment=Ignore hand animation of view bobb
 
 # Experimental
 option.AUTHOR=Author
-option.AUTHOR.comment=https://afdian.net/a/geforcelegend. https://space.bilibili.com/129209703
+option.AUTHOR.comment=https://afdian.net/a/geforcelegend. https://space.bilibili.com/129209703. Sundial Lite enables ALL effect by default. Disable or lower some option if you want better performance
 option.MODIFIED=Modified
 option.MODIFIED.comment=https://space.bilibili.com/80039299
 option.GLOWING_OVERLAY=Glowing entities overlay
