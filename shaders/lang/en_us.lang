@@ -46,6 +46,7 @@ profile.HelianMMCO=Helian-MMCO (Default)
 profile.Dreamcore=Dreamcore
 profile.RealisticForBuildings=Realistic (For Buildings)
 profile.Space=Space (SkyBlock)
+screen.MODIFIED_SETTINGS=Modified settings
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter

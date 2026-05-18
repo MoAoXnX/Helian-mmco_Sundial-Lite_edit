@@ -152,7 +152,7 @@ void main() {
     #ifdef END_PORTAL
         if (blockEntityId == 8193) {
             vec3 worldDir = -mat3(gbufferModelViewInverse) * viewDir;
-	        vec3 worldDirAbs = abs(worldDir);
+            vec3 worldDirAbs = abs(worldDir);
             vec3 samplePartAbs = step(vec3(max(worldDirAbs.x, max(worldDirAbs.y, worldDirAbs.z))), worldDirAbs);
             vec3 samplePart = samplePartAbs * signI(worldDir);
             float intersection = 1.0 / dot(samplePartAbs, worldDirAbs);
@@ -192,7 +192,7 @@ void main() {
         #ifdef ENTITIES
             else {
                 useTexAlbedo = abs(albedoData.w - 0.5) > 0.499;
-                albedoData.w = useTexAlbedo ? albedoData.w : 1.0;
+                albedoData.w = clamp(albedoData.w + float(!useTexAlbedo), 0.0, 1.0);
             }
         #endif
         #ifdef PARTICLE

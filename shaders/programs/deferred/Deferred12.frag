@@ -88,8 +88,8 @@ float ACosPoly(float x)
 float ACos_Approx(float x)
 {
     float u = ACosPoly(abs(x)) * sqrt(1.0 - abs(x));
-			
-    return x >= 0.0 ? u : PI - u;
+
+    return x < 0.0 ? PI - u : u;
 }
 
 float ACos(float x)
@@ -104,7 +104,7 @@ vec2 ACos(vec2 x)
 
 float ASin01_Approx(float x)// x: [0,1]
 {
-	return 1.5707963267948966 - ACosPoly(x) * sqrt(1.0 - x);
+    return 1.5707963267948966 - ACosPoly(x) * sqrt(1.0 - x);
 }
 
 vec4 GetQuaternion(vec3 to)
@@ -122,8 +122,8 @@ vec4 GetQuaternion(vec3 to)
 
 vec2 cmul(vec2 c0, vec2 c1)
 {
-	return vec2(c0.x * c1.x - c0.y * c1.y,
-		        c0.y * c1.x + c0.x * c1.y);
+    return vec2(c0.x * c1.x - c0.y * c1.y,
+                c0.y * c1.x + c0.x * c1.y);
 }
 
 float SamplePartialSlice(float x, float sin_thVN)
@@ -199,13 +199,11 @@ vec2 SamplePartialSliceDir(vec3 vvsN, float rnd01)
     return dir0;
 }
 
-vec2 SliceRelCDF_Cos(vec2 x, float angN, float t01, float t1)
+vec2 SliceRelCDF_Cos(vec2 x, float angN, float sinN)
 {
     vec2 phi = x * PI * 2.0 - PI;
 
-    vec2 t0 = -cos(angN - phi) - phi * sin(angN);
-
-    return mix(x, t0 * t1 + t01, step(abs(x - 0.5), vec2(0.5)));
+    return -cos(angN - phi) - phi * sinN;
 }
 
 // transform v by unit quaternion q.xy0s
@@ -275,91 +273,91 @@ vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord,
         vec3 sliceN = cross(viewDir, rayDir);
         vec3 projN = normal - sliceN * dot(normal, sliceN);
         float projNSqrLen = dot(projN, projN);
-        if (projNSqrLen == 0.0) continue;
-        vec3 T = cross(sliceN, projN);
-        float projNRcpLen = inversesqrt(projNSqrLen);
-        float cosN = dot(projN, viewDir) * projNRcpLen;
-        float angN = signMul(ACos(cosN), dot(viewDir, T));
+        if (projNSqrLen != 0.0) {
+            vec3 T = cross(sliceN, projN);
+            float projNRcpLen = inversesqrt(projNSqrLen);
+            float cosN = dot(projN, viewDir) * projNRcpLen;
+            float angN = signMul(ACos(cosN), dot(viewDir, T));
+            float sinN = sin(angN);
 
-        float w0 = clamp((sin(angN) / (cosN + angN * sin(angN))) * (PI/4.0) + 0.5, 0.0, 1.0);
-        float t1 = 0.25 / (cosN + angN * sin(angN));
-        float t01 = (3.0 * cosN + (4.0 * angN + PI) * sin(angN)) * t1;
+            float w0 = clamp((sinN / (cosN + angN * sinN)) * (PI/4.0) + 0.5, 0.0, 1.0);
+            float t1 = 0.25 / (cosN + angN * sinN);
+            float t01 = (3.0 * cosN + (4.0 * angN + PI) * sinN) * t1;
 
-        // partial slice re-mapping constants
-        float w0_remap_mul = 32.0 / (1.0 - w0);
-        float w0_remap_add = -w0 * w0_remap_mul + 64.0;
+            // partial slice re-mapping constants
+            float w0_remap_mul = 32.0 / (1.0 - w0);
+            float w0_remap_add = -w0 * w0_remap_mul + 64.0;
+            w0_remap_add += w0_remap_mul * t01;
+            w0_remap_mul *= t1;
 
-        uint occBits = 0u;
-        float stepSize = exp2(stepScale * noise.y);
-        stepScale = exp2(stepScale);
+            uint occBits = 0u;
+            float stepSize = exp2(stepScale * noise.y);
+            stepScale = exp2(stepScale);
 
-        for (int j = 0; j < VB_STEPS; j++) {
-            vec2 sampleCoord = originCoord + stepDir * stepSize;
-            ivec2 sampleTexel = ivec2(sampleCoord * screenSize);
-            float sampleDepth = uintBitsToFloat(texelFetch(colortex6, sampleTexel, 0).r);
-            stepSize *= stepScale;
-            vec3 sampleViewPos = vec3(sampleCoord * 2.0 - 1.0, 1.0);
-            #ifdef TAA
-                sampleViewPos.xy -= taaOffset;
-            #endif
-            sampleViewPos.xy = vec2(gbufferProjectionInverse[0].x, gbufferProjectionInverse[1].y) * sampleViewPos.xy + gbufferProjectionInverse[3].xy;
+            for (int j = 0; j < VB_STEPS; j++) {
+                vec2 sampleCoord = originCoord + stepDir * stepSize;
+                ivec2 sampleTexel = ivec2(sampleCoord * screenSize);
+                float sampleDepth = uintBitsToFloat(texelFetch(colortex6, sampleTexel, 0).r);
+                stepSize *= stepScale;
+                vec3 sampleViewPos = vec3(sampleCoord * 2.0 - 1.0, 1.0);
+                #ifdef TAA
+                    sampleViewPos.xy -= taaOffset;
+                #endif
+                sampleViewPos.xy = vec2(gbufferProjectionInverse[0].x, gbufferProjectionInverse[1].y) * sampleViewPos.xy + gbufferProjectionInverse[3].xy;
 
-            if (any(greaterThan(abs(sampleCoord - 0.5), vec2(0.5)))) {
-                break;
-            }
-            float isHand = float(sampleDepth > 1.0);
-            #ifdef LOD
-                if (sampleDepth < 0.0) {
-                    if (sampleDepth == -1.0) {
-                        continue;
+                if (any(greaterThan(abs(sampleCoord - 0.5), vec2(0.5)))) {
+                    break;
+                }
+                if (abs(sampleDepth) != 1.0) {
+                    float isHand = float(sampleDepth > 1.0);
+                    #ifdef LOD
+                        if (sampleDepth < 0.0) {
+                            sampleViewPos.z = projInvLod()[3].z;
+                            sampleViewPos /= projInvLod()[2].w * (-sampleDepth * 2.0 - 1.0) + projInvLod()[3].w;
+                        }
+                        else
+                    #endif
+                    {
+                        sampleViewPos.z = gbufferProjectionInverse[3].z;
+                        sampleViewPos /= gbufferProjectionInverse[2].w * ((sampleDepth - isHand) * 2.0 - 1.0) + gbufferProjectionInverse[3].w;
                     }
-                    sampleViewPos.z = projInvLod()[3].z;
-                    sampleViewPos /= projInvLod()[2].w * (-sampleDepth * 2.0 - 1.0) + projInvLod()[3].w;
+
+                    vec3 deltaPosFront = sampleViewPos - originViewPos;
+                    vec3 deltaPosBack = deltaPosFront + sampleViewPos * inversesqrt(clamp(dot(sampleViewPos, sampleViewPos) * 0.25, 0.0, 1.0)) * 0.1;
+
+                    vec2 horCos = vec2(dot(deltaPosFront, viewDir) * inversesqrt(dot(deltaPosFront, deltaPosFront)),
+                                       dot(deltaPosBack , viewDir) * inversesqrt(dot(deltaPosBack , deltaPosBack )));
+
+                    vec2 horAng = ACos(horCos);
+
+                    // shift relative angles from V to N + map to [0,1]
+                    vec2 hor01 = clamp((horAng + angN) / PI + 0.5, 0.0, 1.0);
+
+                    // map to slice relative distribution
+                    hor01 = SliceRelCDF_Cos(hor01, angN, sinN);
+
+                    // partial slice re-mapping
+                    hor01 = hor01 * w0_remap_mul + w0_remap_add;
+
+                    uvec2 horInt = (floatBitsToUint(hor01) >> 17) & 0x3Fu;
+                    uint mX = horInt.x < 32u ? 0xFFFFFFFFu <<        horInt.x  : 0u;
+                    uint mY = horInt.y != 0u ? 0xFFFFFFFFu >> (32u - horInt.y) : 0u;
+                    uint occBits0 = mX & mY;
+
+                    uint visBits0 = occBits0 & (~occBits);
+                    #ifdef VBGI
+                        if(visBits0 != 0u) {
+                            float vis0 = float(CountBits(visBits0)) * (1.0 / 32.0);
+                            vec4 sampleData = texelFetch(colortex3, sampleTexel, 0);
+                            totalSamples.rgb += sampleData.rgb * vis0 * clamp(1.0 - isOriginNotHand * isHand, 0.0, 1.0);
+                        }
+                    #endif
+                    occBits = occBits | occBits0;
                 }
-            #else
-                if (sampleDepth == 1.0) {
-                    continue;
-                }
-            #endif
-            else {
-                sampleViewPos.z = gbufferProjectionInverse[3].z;
-                sampleViewPos /= gbufferProjectionInverse[2].w * ((sampleDepth - isHand) * 2.0 - 1.0) + gbufferProjectionInverse[3].w;
             }
-
-            vec3 deltaPosFront = sampleViewPos - originViewPos;
-            vec3 deltaPosBack = deltaPosFront + sampleViewPos * inversesqrt(clamp(dot(sampleViewPos, sampleViewPos) * 0.25, 0.0, 1.0)) * 0.1;
-
-            vec2 horCos = vec2(dot(deltaPosFront, viewDir) * inversesqrt(dot(deltaPosFront, deltaPosFront)),
-                               dot(deltaPosBack , viewDir) * inversesqrt(dot(deltaPosBack , deltaPosBack )));
-
-            vec2 horAng = ACos(horCos);
-
-            // shift relative angles from V to N + map to [0,1]
-            vec2 hor01 = clamp((horAng + angN) / PI + 0.5, 0.0, 1.0);
-
-            // map to slice relative distribution
-            hor01 = SliceRelCDF_Cos(hor01, angN, t01, t1);
-
-            // partial slice re-mapping
-            hor01 = hor01 * w0_remap_mul + w0_remap_add;
-
-            uvec2 horInt = (floatBitsToUint(hor01) >> 17) & 0x3Fu;
-            uint mX = horInt.x < 32u ? 0xFFFFFFFFu <<        horInt.x  : 0u;
-            uint mY = horInt.y != 0u ? 0xFFFFFFFFu >> (32u - horInt.y) : 0u;
-            uint occBits0 = mX & mY;
-
-            uint visBits0 = occBits0 & (~occBits);
-            #ifdef VBGI
-                if(visBits0 != 0u) {
-                    float vis0 = float(CountBits(visBits0)) * (1.0 / 32.0);
-                    vec4 sampleData = texelFetch(colortex3, sampleTexel, 0);
-                    totalSamples.rgb += sampleData.rgb * vis0 * clamp(1.0 - isOriginNotHand * isHand, 0.0, 1.0);
-                }
-            #endif
-            occBits = occBits | occBits0;
+            float occ0 = float(CountBits(occBits)) * (1.0 / 32.0);
+            totalSamples.a += occ0;
         }
-        float occ0 = float(CountBits(occBits)) * (1.0 / 32.0);
-        totalSamples.a += occ0;
     }
     totalSamples /= VB_TRACE_COUNT;
     return totalSamples;

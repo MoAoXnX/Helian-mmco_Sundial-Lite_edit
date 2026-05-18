@@ -268,11 +268,11 @@ vec4 reflection(GbufferData gbufferData, vec3 f0, vec3 f82, float firstWeight) {
             #elif defined NETHER
                 reflectionColor.rgb = netherFogTotal(reflectionColor.rgb, reflectionColor.w);
             #else
-                reflectionColor.rgb *= airAbsorption(reflectionColor.w);
                 #if defined ATMOSPHERE_SCATTERING_FOG && defined SHADOW_AND_SKY
                     float atmosphereLength = mix(reflectionColor.w * (ASF_GE_DENSITY_INREFL + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 400.0, float(hitSky));
                     reflectionColor.rgb = solidAtmosphereScattering(reflectionColor.rgb, rayDir, skyColorUp, atmosphereLength, gbufferData.lightmap.y);
                 #endif
+                                reflectionColor.rgb *= airAbsorption(reflectionColor.w);
             #endif
         }
         else if (isEyeInWater == 1) {

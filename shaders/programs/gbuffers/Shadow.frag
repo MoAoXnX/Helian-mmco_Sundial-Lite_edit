@@ -18,7 +18,7 @@
 
 layout(location = 0) out vec4 shadowColor0;
 
-in vec4 color;              // Will become vec4(worldPos, 0.0) when rendering water
+in vec4 color;              // Will become vec4(worldPos, causticsStrength) when rendering water
 in vec3 worldNormal;
 in vec2 texcoord;
 in vec2 shadowOffset;
@@ -59,7 +59,7 @@ float waterCaustic(vec3 mcPos, vec3 lightDir) {
             dist = min(dist, dot(offset, offset));
         }
 
-        causticStrength = dist * sqrt(dist) * (3.0 - 2.0 * dist) * 0.9 + 0.1;
+        causticStrength = clamp(dist * sqrt(dist) * (3.0 - 2.0 * dist) * 0.9 + 0.1, 0.0, 1.0);
     #endif
 
     return causticStrength;
@@ -83,19 +83,26 @@ void main() {
             float ao;
             vec4 overlayColor;
             clrwl_computeFragment(albedo, albedo, lmcoord, ao, overlayColor);
-	        albedo.rgb = mix(albedo.rgb, overlayColor.rgb, overlayColor.a);
+            albedo.rgb = mix(albedo.rgb, overlayColor.rgb, overlayColor.a);
         #endif
+
+        vec2 centerTexelOffset = gl_FragCoord.st - realShadowMapResolution * 0.75 - shadowOffset;
+        if (any(greaterThan(abs(centerTexelOffset), vec2(realShadowMapResolution * 0.25))) || fwidth(shadowOffset.x) > 0.0 || albedo.w < alphaTestRef) discard;
 
         if (shadowOffset.y < -0.5) {
             vec3 mcPos = color.xyz + cameraPosition;
             mcPos.y += 128.0;
             float floorMcHeight = floor(mcPos.y / 2.0);
             float caustic = waterCaustic(mcPos, shadowDirection);
-            albedo = vec4(caustic, mcPos.y * 0.5 - floorMcHeight, 1.0 - floorMcHeight / 255.0, 1.0);
+            albedo = vec4(sqrt(caustic * color.a), mcPos.y * 0.5 - floorMcHeight, 1.0 - floorMcHeight / 255.0, 0.5);
         }
-
-        vec2 centerTexelOffset = gl_FragCoord.st - realShadowMapResolution * 0.75 - shadowOffset;
-        if (any(greaterThan(abs(centerTexelOffset), vec2(realShadowMapResolution * 0.25))) || fwidth(shadowOffset.x) > 0.0 || albedo.w < alphaTestRef) discard;
+        if (shadowOffset.x < -0.5) {
+            albedo.rgb = pow(
+                albedo.rgb * (1.0 - 0.5 * pow2(albedo.w)),
+                vec3(sqrt(albedo.w * 2.2 * 2.2 * 1.5))
+            );
+            albedo = vec4(sqrt(albedo.rgb), 1.0);
+        }
 
         #ifdef SHADOW_DISTORTION_FIX
             vec3 shadowProjPos = vec3(centerTexelOffset / (realShadowMapResolution * 0.25), gl_FragCoord.z * 10.0 - 5.0);

@@ -53,6 +53,7 @@ profile.HelianMMCO=Helian-MMCO (默认)
 profile.Dreamcore=梦核
 profile.RealisticForBuildings=写实 (拍摄建筑)
 profile.Space=太空 (空岛)
+screen.MODIFIED_SETTINGS=Modified选项汇总
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=各向异性过滤
