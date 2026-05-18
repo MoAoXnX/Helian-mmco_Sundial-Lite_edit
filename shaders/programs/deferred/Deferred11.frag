@@ -63,7 +63,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
             normalOffset.z *= 0.1;
 
             vec3 basicShadowCoordNoDistort = sssShadowCoord + normalOffset;
-            sssShadowCoord -= normalOffset;
+            sssShadowCoord = distortShadowCoord(sssShadowCoord - normalOffset);
             float clipLengthInv = inversesqrt(dot(basicShadowCoordNoDistort.xy, basicShadowCoordNoDistort.xy));
             float distortFactor = clipLengthInv * log(distortionStrength / clipLengthInv + 1.0) / log(distortionStrength + 1.0);
             vec3 basicShadowCoord = basicShadowCoordNoDistort;
@@ -112,9 +112,9 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                 float sampleRadius = noise.y * 1.0 / PCSS_SAMPLES + 1e-6;
                 bool needSubsurfaceScattering = porosity > 64.5 / 255.0;
 
-                float sssRadius = 1.0 + 1.0 / filterRadius;
+                float sssRadius = (0.25 + 0.25 / filterRadius) * distortFactor;
                 float transparentShadow = 1e-6;
-                vec4 transparentShadowColor = vec4(0.0, 0.0, 0.0, 1e-6);
+                vec3 transparentShadowColor = vec3(0.0);
                 float opticalDepth = 0.0;
                 float solidShadow = 0.0;
                 for (int i = 0; i < PCSS_SAMPLES; i++) {
@@ -127,7 +127,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                     }
 
                     if (needSubsurfaceScattering) {
-                        vec3 sssSampleCoord = distortShadowCoord(sssShadowCoord + vec3(sampleOffset.st * sssRadius, 0.0));
+                        vec3 sssSampleCoord = sssShadowCoord + vec3(sampleOffset.st * sssRadius, 0.0);
                         float shadowDepth = textureLod(shadowtex1, sssSampleCoord.st, 0.0).r;
                         opticalDepth += clamp(sssSampleCoord.z - shadowDepth + 1e-4, 0.0, 1.0);
                     }
@@ -139,7 +139,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                         float sampleTransparentShadow = textureLod(shadowtex0, sampleShadowCoord, 0.0);
                         if (sampleTransparentShadow < 1.0) {
                             sampleTransparentShadow = 1.0 - sampleTransparentShadow;
-                            vec4 sampleTransparentColor = textureLod(shadowcolor0, sampleShadowCoord.st, 0.0);
+                            vec3 sampleTransparentColor = textureLod(shadowcolor0, sampleShadowCoord.st, 0.0).rgb;
                             transparentShadow += sampleTransparentShadow;
                             transparentShadowColor += sampleTransparentColor * sampleTransparentShadow;
                         }
@@ -148,13 +148,10 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                 #ifdef TRANSPARENT_SHADOW
                     transparentShadowColor /= transparentShadow;
                     transparentShadow /= PCSS_SAMPLES;
-                    transparentShadowColor.rgb = pow(
-                        transparentShadowColor.rgb * (1.0 - 0.5 * pow2(transparentShadowColor.w)),
-                        vec3(sqrt(transparentShadowColor.w * 2.2 * 2.2 * 1.5))
-                    );
-                    transparentShadowColor.rgb = mix(vec3(1.0), transparentShadowColor.rgb, vec3(transparentShadow));
-                    shadow *= transparentShadowColor.rgb;
-                    subsurfaceScattering *= transparentShadowColor.rgb;
+                    transparentShadowColor *= transparentShadowColor;
+                    transparentShadowColor = mix(vec3(1.0), transparentShadowColor, vec3(transparentShadow));
+                    shadow *= transparentShadowColor;
+                    subsurfaceScattering *= transparentShadowColor;
                 #endif
 
                 solidShadow *= normalFactor / PCSS_SAMPLES;
@@ -173,7 +170,7 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
         }
     }
 
-    float screenSpaceShadow(vec3 viewPos, float NdotL, float viewLength, float porosity, vec2 noise, float materialID) {
+    float screenSpaceShadow(vec3 viewPos, float NdotL, float viewLength, float porosity, vec2 noise, float handOffset) {
         vec4 originProjPos = vec4(vec3(gbufferProjection[0].x, gbufferProjection[1].y, gbufferProjection[2].z) * viewPos, -viewPos.z);
         originProjPos.z += gbufferProjection[3].z;
         originProjPos.xy += gbufferProjection[2].xy * viewPos.z;
@@ -222,7 +219,6 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
         vec4 sampleCoord = originCoord + noise.x * stepSize;
         sampleCoord.zw -= 2e-7;
 
-        float handOffset = float(materialID == MAT_HAND);
         float maximumThickness = 0.0005 * viewLength + 0.03 * handOffset;
         float maximumThicknessLod = 0.5 * viewLength;
         sampleCoord.zw -= vec2(maximumThickness, maximumThicknessLod);
@@ -295,9 +291,8 @@ void main() {
         } else
     #endif
     {
-        float handDepth = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
-        if (gbufferData.materialID == MAT_HAND && abs(handDepth - 0.5) < 0.5) {
-            gbufferData.depth = handDepth;
+        if (depthWithParallax > 1.0) {
+            gbufferData.depth = gbufferData.depth / MC_HAND_DEPTH - 0.5 / MC_HAND_DEPTH + 0.5;
         }
         float depthWithHand = gbufferData.depth - 1e-7;
         vec3 viewDirection = vec3(texcoord * 2.0 - 1.0, gbufferProjectionInverse[3].z);
@@ -320,7 +315,6 @@ void main() {
     vec4 finalColor = vec4(vec3(0.0), blendedFrames);
     if (abs(gbufferData.depth) < 1.0) {
         worldPos += gbufferModelViewInverse[3].xyz;
-        vec3 viewDir = normalize(viewPosNoPOM);
         vec3 worldGeoNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.geoNormal);
 
         finalColor.rgb += gbufferData.emissive * PBR_BRIGHTNESS * PI;
@@ -335,17 +329,18 @@ void main() {
                 gbufferData.metalness = step(229.5 / 255.0, gbufferData.metalness);
             #endif
             f0 = mix(f0, gbufferData.albedo.rgb, gbufferData.metalness);
+            float viewLength = inversesqrt(dot(viewPos, viewPos));
+            vec3 viewDir = viewPos * viewLength;
             float NdotV = clamp(dot(viewDir, -gbufferData.normal), 0.0, 1.0);
             vec3 diffuseAbsorption = (1.0 - gbufferData.metalness) * diffuseAbsorptionWeight(NdotV, gbufferData.smoothness, f0, f82);
 
             vec3 shadow = sunColor;
             float NdotL = clamp(dot(gbufferData.normal, viewShadowDirection), 0.0, 1.0);
             vec3 shadowDiffuse = gbufferData.albedo.rgb * diffuseAbsorption;
-            vec3 shadowSpecular = sunlightSpecular(viewDir, viewShadowDirection, gbufferData.normal, gbufferData.smoothness * 0.995, NdotL, NdotV, f0, f82);
+            vec3 shadowSpecular = sunlightSpecular(viewDir, viewShadowDirection, gbufferData.normal, gbufferData.smoothness * 0.995, NdotL, NdotV, f0, f82) * airAbsorption(11.4 * gbufferData.smoothness);
             vec2 noise = blueNoiseTemporal(texcoord).xy;
-            float viewLength = inversesqrt(dot(viewPos, viewPos));
             #ifdef SCREEN_SPACE_SHADOW
-                shadow *= screenSpaceShadow(viewPos, dot(worldGeoNormal, shadowDirection), viewLength, gbufferData.porosity, noise, gbufferData.materialID);
+                shadow *= screenSpaceShadow(viewPos, dot(worldGeoNormal, shadowDirection), viewLength, gbufferData.porosity, noise, float(depthWithParallax > 1.0));
             #endif
             #ifdef CLOUD_SHADOW
                 shadow *= cloudShadow(worldPos, shadowDirection);
