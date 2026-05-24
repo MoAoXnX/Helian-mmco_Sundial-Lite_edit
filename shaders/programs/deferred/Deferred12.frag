@@ -323,7 +323,7 @@ vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord,
                     }
 
                     vec3 deltaPosFront = sampleViewPos - originViewPos;
-                    vec3 deltaPosBack = deltaPosFront + sampleViewPos * inversesqrt(clamp(dot(sampleViewPos, sampleViewPos) * 0.25, 0.0, 1.0)) * 0.1;
+                    vec3 deltaPosBack = deltaPosFront + sampleViewPos * inversesqrt(clamp(dot(sampleViewPos, sampleViewPos) * (0.1 + 0.15 * isOriginNotHand), 0.0, 1.0)) * 0.1;
 
                     vec2 horCos = vec2(dot(deltaPosFront, viewDir) * inversesqrt(dot(deltaPosFront, deltaPosFront)),
                                        dot(deltaPosBack , viewDir) * inversesqrt(dot(deltaPosBack , deltaPosBack )));
@@ -411,7 +411,7 @@ void main() {
         #ifdef SHADOW_AND_SKY
             lightColor += skyLightStrength * (skyColorUp + sunColor) * (ENVIROMENT_BRIGHTNESS - 0.6 * weatherStrength);
         #endif
-        lightColor *= (1.0 - currData.w);
+        lightColor *= (1.0 - currData.w * (1.0 - 0.15 * blendWeight));
         #ifdef VBGI
             lightColor += currData.rgb;
         #endif
