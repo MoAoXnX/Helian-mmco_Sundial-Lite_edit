@@ -243,11 +243,11 @@ vec3 solidAtmosphereScattering(vec3 color, vec3 worldDir, vec3 skyColor, float w
     float g2 = g * g;
     sunLightColor *= rayleighPhase(LdotV) + miePhase(LdotV, g, g2);
     moonLightColor *= (rayleighPhase(-LdotV) + miePhase(-LdotV, g, g2)) * mix(NIGHT_BRIGHTNESS, NIGHT_VISION_BRIGHTNESS, nightVision);
-    vec3 scatteringColor = mix((sunLightColor + moonLightColor) * 30.0, skyColor * 0.25, sqrt(weatherStrength) * 0.99) * skyLight * skyLight;
+    vec3 scatteringColor = mix((sunLightColor + moonLightColor) * 30.0, skyColor * 0.25, sqrt(weatherStrength) * 0.79) * skyLight * skyLight;
 
     vec2 originRelativeHeight = earthScaledHeight - playerHeight / scaledHeight * 1.44269502;
     vec2 originDensity = exp2(originRelativeHeight);
-    vec2 opticalDepth = originDensity * worldDepth * 5.0 * (1.0 + RF_DENSITY * 5.0 * weatherStrength * weatherStrength);
+    vec2 opticalDepth = originDensity * worldDepth * 5.0 * (ASF_DENSITY + RF_DENSITY * 5.0 * weatherStrength * weatherStrength);
     vec3 absorption = exp2(-opticalDepth.x * rayleighBeta - opticalDepth.y * rainyMieBeta);
     return mix(scatteringColor, color, absorption);
 }

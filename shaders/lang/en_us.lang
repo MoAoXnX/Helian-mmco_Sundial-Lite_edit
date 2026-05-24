@@ -8,11 +8,13 @@ screen.Normal=Normal
 screen.Parallax=Parallax
 screen.Specular=PBR
 screen.Reflection=Reflection
+screen.LABPBR_OPTIONS=LabPBR options
 screen.Shadow=Shadow
 screen.Lighting=Lighting
 screen.VisibilityBitmask=Visibility bitmask
 screen.VisibilityBitmask.comment=Used for global illumination and ambient occlusion. Ambient occlusion is always enabled. Global illumination is optional
 screen.Atmosphere=Atmosphere
+screen.ATMOSPHERE_SCATTERING_FOG_OPTIONS=Atmosphere scattering fog option
 screen.RainFog=Rain fog
 screen.VolumetricLight=Volumetric light
 screen.VolumetricFog=Volumetric fog
@@ -37,12 +39,14 @@ screen.DepthOfField=Depth of field
 screen.ChromaticDispersion=Chromatic dispersion
 screen.Sharpening=Sharpening
 screen.Weather=Weather
+screen.RAIN_RIPPLES_OPTIONS=Rain ripples options
 screen.ModSupport=Mod support
 screen.Experimental=Experimental effect
 profile.HelianMMCO=Helian-MMCO (Default)
 profile.Dreamcore=Dreamcore
 profile.RealisticForBuildings=Realistic (For Buildings)
 profile.Space=Space (SkyBlock)
+screen.MODIFIED_SETTINGS=Modified settings
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter
@@ -154,6 +158,7 @@ option.SUNLIGHTINRAIN=Sunlight in rain
 option.SUNLIGHTINRAIN.comment=Degree of sunlight brightness reduction in rainy days.
 option.BASICLIGHT_WORLD0=Basic light
 option.SKYBRIGHTNESS=Sky brightness
+option.ENVIROMENT_BRIGHTNESS=Enviroment brightness (Don't touch it)
 option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
 # LightColor
 option.LIGHT_BRIGHTNESS=Light brightness
@@ -179,6 +184,9 @@ option.WORLD_BASIC_HEIGHT.comment=Planet height on Y=0 coordinate
 option.VOLUMETRIC_LIGHT=Volumetric light
 option.VOLUMETRIC_FOG=Volumetric fog
 option.ATMOSPHERE_SCATTERING_FOG=Atmosphere scattering fog
+option.ASF_DENSITY=ASF density
+option.ASF_GROUND_EXTRA_DENSITY=ASF ground extra density
+option.ASF_GE_DENSITY_INREFL=ASF ground extra density in reflection
 # RainFog
 option.RF_DENSITY=Rain fog density
 option.RF_DENSITY.comment=Overall density of rain fog. Affect visibility of sky and ground
