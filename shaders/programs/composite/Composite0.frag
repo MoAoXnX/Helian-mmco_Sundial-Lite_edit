@@ -173,7 +173,7 @@ vec4 reflection(GbufferData gbufferData, vec3 f0, vec3 f82, float firstWeight) {
         for (int i = 0; i < SCREEN_SPACE_REFLECTION_STEP; i++) {
             float sampleDepth = uintBitsToFloat(textureLod(colortex6, sampleCoord.st, 0.0).x);
             sampleDepth -= float(sampleDepth > 1.0);
-            bool hitCheck = sampleCoord.z > sampleDepth && sampleDepth < 1.0;
+            bool hitCheck = sampleCoord.z > sampleDepth && floatBitsToUint(sampleDepth) < 0x3F800000u;
             #ifdef LOD
                 hitCheck = hitCheck || (sampleDepth < 0.0 && sampleCoord.w > -sampleDepth);
             #endif
@@ -202,7 +202,7 @@ vec4 reflection(GbufferData gbufferData, vec3 f0, vec3 f82, float firstWeight) {
                     break;
                 }
             }
-            if (clamp(sampleCoord.st, 0.0, 1.0) != sampleCoord.st || sampleCoord.z < 0.0) break;
+            if (any(greaterThan(floatBitsToUint(sampleCoord.st), uvec2(0x3F800000u))) || sampleCoord.z < 0.0) break;
             sampleCoord += stepSize;
         }
         rayDir = mat3(gbufferModelViewInverse) * rayDir;
