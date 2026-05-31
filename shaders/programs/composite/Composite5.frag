@@ -238,7 +238,11 @@ void main() {
         const float fadeFactor = VANILLA_BLOCK_LIGHT_FADE;
         vec3 blockLight = pow2(1.0 / (fadeFactor - fadeFactor * fadeFactor / (1.0 + fadeFactor) * gbufferData.lightmap.x) - 1.0 / fadeFactor) * commonLightColor;
         vanillaLight += blockLight + BASIC_LIGHT;
-        vanillaLight += pow(texelFetch(colortex5, ivec2(0), 0).rgb, vec3(2.2)) * NIGHT_VISION_BRIGHTNESS;
+        #ifdef MOD_NIGHT_VISION_COMPAT
+            vanillaLight += pow(texelFetch(colortex5, ivec2(0), 0).rgb, vec3(2.2)) * NIGHT_VISION_BRIGHTNESS;
+        #else
+            vanillaLight += nightVision * NIGHT_VISION_BRIGHTNESS;
+        #endif
         solidColor.rgb += gbufferData.albedo.rgb * gbufferData.albedo.w * (gbufferData.emissive * PBR_BRIGHTNESS * PI + vanillaLight * isTargetParticle);
         #ifdef SHADOW_AND_SKY
             float NdotL = clamp(dot(worldNormal, shadowDirection) + isTargetParticle, 0.0, 1.0);
@@ -325,11 +329,13 @@ void main() {
                 }
 
                 float noise = bayer64Temporal(gl_FragCoord.xy);
-                float maxAllowedDistance = far;
+                float maxHorizonalRange = far + 32.0;
+                float maxVerticalRange = min(far, max(cameraPosition.y + 64.0, 320.0 - cameraPosition.y) * 2.0) + 32.0;
                 #ifdef LOD
-                    maxAllowedDistance = lodRenderDistance() * 1.01;
+                    maxHorizonalRange = lodRenderDistance() * 1.1;
                 #endif
-                maxAllowedDistance = (maxAllowedDistance + 32.0) * inversesqrt(max(waterWorldDir.y * waterWorldDir.y, 0.5));
+                float waterWorldDirY2 = waterWorldDir.y * waterWorldDir.y;
+                float maxAllowedDistance = maxHorizonalRange * maxVerticalRange * inversesqrt(pow2(maxHorizonalRange) * waterWorldDirY2 + pow2(maxVerticalRange) * (1.0 - waterWorldDirY2));
                 maxAllowedDistance = min(maxAllowedDistance, min(64.0 * inversesqrt(dot(absorptionBeta, absorptionBeta) + 1e-6), 5000.0 * exp(-6.0 * length(absorptionBeta))));
 
                 float targetLength = min(maxAllowedDistance, waterViewDepthNoLimit);
