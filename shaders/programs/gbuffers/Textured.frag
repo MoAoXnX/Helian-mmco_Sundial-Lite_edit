@@ -204,7 +204,7 @@ void main() {
         vec2 albedoTexSize = vec2(textureSize(gtexture, 0));
         vec2 albedoTexelSize = 1.0 / albedoTexSize;
         vec4 fixedCoordRange = coordRange;
-        if (fwidth(coordRange.x) + fwidth(coordRange.y) > 1e-6) {
+        if (fwidth(coordRange.x) + fwidth(coordRange.y) > 1e-5) {
             fixedCoordRange = vec4(0.0, 0.0, 1.0, 1.0);
         }
         float parallaxScale = ENTITY_TEXTURE_RESOLUTION / max(textureScale.x * albedoTexSize.x, textureScale.y * albedoTexSize.y);
@@ -247,6 +247,7 @@ void main() {
             vec4 overlayColor;
             clrwl_computeFragment(albedoData, albedoData, rawData.lightmap, ao, overlayColor);
             albedoData.rgb = mix(albedoData.rgb, overlayColor.rgb, overlayColor.a);
+            rawData.lightmap = clamp(rawData.lightmap * 16.0 / 15.0 - 0.5 / 15.0, 0.0, 1.0);
         #endif
 
         if (albedoData.w < max(0.001, alphaTestRef)) discard;
@@ -274,7 +275,7 @@ void main() {
             rawData.porosity = 0.0;
         #endif
 
-        #if (defined EMISSIVE) && (defined HARDCODED_EMISSIVE)
+        #ifdef EMISSIVE
             rawData.emissive += step(rawData.emissive, 1e-3);
         #endif
 

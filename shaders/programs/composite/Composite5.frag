@@ -164,7 +164,7 @@ void main() {
             #endif
             if (waterDepth < targetSolidDepth) {
                 solidDepth = targetSolidDepth;
-                solidColor.rgb = textureLod(colortex3, refractionTarget, 0.0).rgb;
+                solidColor.rgb = texelFetch(colortex3, ivec2(refractionTarget * screenSize), 0).rgb;
                 vec3 viewPos;
                 #ifdef LOD
                     if (solidDepth > 1.0) {
@@ -230,7 +230,10 @@ void main() {
         solidColor.rgb = mix(rawSolidColor, solidColor.rgb, vec3(solidColor.w)) * stainedColor;
 
         float isTargetParticle = 1.0 - float(isTargetNotParticle);
-        vec3 vanillaLight = pow2(gbufferData.lightmap.y) * (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - 0.5 * weatherStrength)) * (1.0 - gbufferData.metalness) * (ENVIROMENT_BRIGHTNESS - 0.7 * weatherStrength);
+        vec3 vanillaLight =
+            pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75) *
+            (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * weatherStrength)) *
+            (1.0 - gbufferData.metalness) * (ENVIROMENT_BRIGHTNESS - 0.7 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
         #ifdef IS_IRIS
             float eyeRelatedDistance = length(waterWorldPos + relativeEyePosition);
             gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));

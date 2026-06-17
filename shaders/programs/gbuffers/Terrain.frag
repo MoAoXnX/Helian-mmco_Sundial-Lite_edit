@@ -67,7 +67,7 @@ void main() {
     vec2 albedoTexSize = vec2(textureSize(gtexture, 0));
     vec2 albedoTexelSize = 1.0 / albedoTexSize;
     vec4 fixedCoordRange = coordRange;
-    if (fwidth(coordRange.x) + fwidth(coordRange.y) > 1e-6) {
+    if (fwidth(coordRange.x) + fwidth(coordRange.y) > 1e-5) {
         fixedCoordRange = vec4(0.0, 0.0, 1.0, 1.0);
     }
     vec2 pixelScale = albedoTexSize * textureScale;
@@ -158,7 +158,7 @@ void main() {
         rawData.emissive += hardcodedEmissive * clamp(1.0 - rawData.emissive * 1e+3, 0.0, 1.0);
     #endif
     bool isCauldronWater = material == 8192;
-    #if MC_VERSION > 12111
+    #if MC_VERSION >= 260100
         isCauldronWater = false;
     #endif
     rawData.smoothness += float(rawData.smoothness < 1e-3 && isCauldronWater);
