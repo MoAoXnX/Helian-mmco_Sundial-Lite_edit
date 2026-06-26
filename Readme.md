@@ -2,6 +2,8 @@
 
 Personal simple modification of Sundial-lite.
 
+[![CurseForge](https://img.shields.io/curseforge/dt/1578321?color=F16436&label=CurseForge&logo=curseforge)](https://www.curseforge.com/minecraft/shaders/helian-mmco-sundial-lite-edit)
+
 ![6748](https://github.com/user-attachments/assets/620e4f18-51cb-493a-a4b5-cf4138a30aad)
 
 # Sundial Lite
