@@ -174,7 +174,7 @@ option.BW0_G=绿色强度
 option.BW0_B=蓝色强度
 option.SKYBRIGHTNESS=天空亮度
 option.ENVIROMENT_BRIGHTNESS=环境光亮度 (别动这个选项)
-option.SUNLIGHTSPECULARROUGH=阳光反射粗糙度
+option.SLSR_TEST1.comment=0.0防止远处阳光高光漏光. 1.0获得雨天明显高光.
 # LightColor
 option.LIGHT_BRIGHTNESS=光源亮度
 option.LIGHT_COLOR_R=光源颜色：红

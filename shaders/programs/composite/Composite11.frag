@@ -54,7 +54,7 @@ vec3 smoothMotionBlur(vec2 coord) {
         #if SR_ENABLE
             velocityCoord *= renderScale;
         #endif
-        vec2 velocity = textureLod(colortex5, coord, 0.0).xy;
+        vec2 velocity = textureLod(colortex5, velocityCoord, 0.0).xy;
         #if SR_ENABLE
             velocity *= renderScale;
         #endif

@@ -185,7 +185,7 @@ vec3 sunlightSpecular(vec3 viewDir, vec3 lightDir, vec3 normal, float smoothness
     }
     float LdotH = sqrt(clamp(LdotH2, 0.0, 1.0));
 
-    float roughness = pow2((1.0 + SUNLIGHTSPECULARROUGH) - smoothness);
+    float roughness = pow2(1.0 - smoothness);
     vec3 reflectDir = viewDir + 2.0 * NdotV * normal;
     float NdotH2 = clamp(dot(reflectDir, lightDir) * 1.0001 * 0.5 + 0.0001 * 0.5 + 0.5, 0.0, 1.0);
 

@@ -163,7 +163,6 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
                 shadow *= solidShadow;
             }
             else {
-                skyLight = smoothstep(0.8, 0.9, skyLight);
                 shadow *= skyLight * normalFactor;
                 subsurfaceScattering *= skyLight * (1.0 - normalFactor) * NdotL * step(64.5 / 255.0, porosity);
             }
@@ -260,25 +259,6 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
 
         return clamp(mix(shadow, 1.0, shadowWeight), 0.0, 1.0);
     }
-
-    vec3 renderSun(vec3 rayDir, vec3 lightDir, vec3 sunLight) {
-        //http://www.physics.hmc.edu/faculty/esin/a101/limbdarkening.pdf
-        float cosAngle = clamp(dot(rayDir, lightDir), 0.0, 1.0);
-        const vec3 u = vec3(1.0, 1.0, 1.0);
-        const vec3 a = vec3(0.397, 0.503, 0.652);
-        float theta = acos(cosAngle);
-        float centerToEdge = (theta / sunRadius);
-
-        vec3 sun = vec3(0.0);
-        if (theta < sunRadius) {
-            vec3 light = sunLight;
-            float mu = 1.0 - centerToEdge * centerToEdge;
-            vec3 factor = vec3(1.0) - u * (vec3(1.0) - pow(vec3(mu), a * 0.5));
-
-            sun = light * factor;
-        }
-        return sun;
-    }
 #endif
 
 void main() {
@@ -346,7 +326,9 @@ void main() {
             vec3 shadow = sunColor;
             float NdotL = clamp(dot(gbufferData.normal, viewShadowDirection), 0.0, 1.0);
             vec3 shadowDiffuse = gbufferData.albedo.rgb * diffuseAbsorption;
-            vec3 shadowSpecular = sunlightSpecular(viewDir, viewShadowDirection, gbufferData.normal, gbufferData.smoothness * 0.995, NdotL, NdotV, f0, f82) * airAbsorption(11.4 * gbufferData.smoothness);
+            vec3 shadowSpecular =
+                sunlightSpecular(viewDir, viewShadowDirection, gbufferData.normal, gbufferData.smoothness * 0.995, NdotL, NdotV, f0, f82) *
+                airAbsorption(11.4 * gbufferData.smoothness) * clamp((19.0 + SLSR_TEST1) - gbufferData.smoothness * (20.0 - SLSR_TEST1), 0.0, 1.0);
             vec2 noise = blueNoiseTemporal(texcoord).xy;
             #ifdef SCREEN_SPACE_SHADOW
                 shadow *= screenSpaceShadow(viewPos, dot(worldGeoNormal, shadowDirection), viewLength, gbufferData.porosity, noise, float(depthWithParallax > 1.0));

@@ -164,7 +164,6 @@ option.BW0_G=Green
 option.BW0_B=Blue
 option.SKYBRIGHTNESS=Sky brightness
 option.ENVIROMENT_BRIGHTNESS=Enviroment brightness (Don't touch it)
-option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
 # LightColor
 option.LIGHT_BRIGHTNESS=Light brightness
 option.LIGHT_COLOR_R=Light color: red
