@@ -37,7 +37,6 @@ void main() {
     float centerDepth = centerData.w;
     float centerCoCRadius = clamp(abs(centerData.w), 0.0, 1.0);
 
-    const mat2 goldenRotate = mat2(cos(2.39996323), sin(2.39996323), -sin(2.39996323), cos(2.39996323));
     const float strength = 15.0 * MAX_BLUR_RADIUS;
     vec2 noise = blueNoiseTemporal(texcoord).xy;
     float radius = noise.y / DOF_SAMPLES + 1e-10;

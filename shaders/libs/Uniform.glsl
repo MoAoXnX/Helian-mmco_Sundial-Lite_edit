@@ -86,6 +86,7 @@ uniform mat4 gbufferPreviousProjection;
 #endif
 
 const float PI = 3.1415926535897;
+const mat2 goldenRotate = mat2(cos(2.39996323), sin(2.39996323), -sin(2.39996323), cos(2.39996323));
 
 #ifdef SETTINGS
     float nightBrightness = mix(NIGHT_BRIGHTNESS, NIGHT_VISION_BRIGHTNESS, nightVision);

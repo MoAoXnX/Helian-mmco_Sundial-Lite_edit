@@ -84,6 +84,16 @@ option.CAULDRON_WAVE.comment=在炼药锅内的水面上渲染水波. 需要将�
 option.WATER_WAVE_SCALE=水波缩放
 option.WATER_WAVE_HEIGHT=水波高度
 option.WATER_WAVE_SPEED=水波速度
+option.WATER_WAVE_STEEPNESS=水波锐度
+option.WATER_WAVE_STEEPNESS.comment=水波波峰的尖锐程度
+option.WATER_WAVE_LAYERS_SCALE=水波每层缩放
+option.WATER_WAVE_LAYERS_SCALE.comment=每一层水波相较上一层的波长缩放
+option.WATER_WAVE_LAYERS_FADE=水波每层衰减
+option.WATER_WAVE_LAYERS_FADE.comment=每一层噪声相较上一层的高度衰减
+option.WATER_WAVE_HEIGHT_LAYERS=水波高度层数
+option.WATER_WAVE_HEIGHT_LAYERS.comment=计算水面视差时使用的水波数量. 不建议调至极高值
+option.WATER_WAVE_NORMAL_LAYERS=水波法线层数
+option.WATER_WAVE_NORMAL_LAYERS.comment=计算水面法线时使用的水波数量. 更高的值可让水面拥有更多细节，但会影响性能
 # Normal
 option.NORMAL_STRENGTH=法线强度
 option.NORMAL_FORMAT=法线格式
