@@ -132,10 +132,6 @@ float baseCloudNoise(vec2 coord) {
 }
 
 float realisticCloudDensity(vec3 cloudPos, vec3 wind, float cloudDistance, int octaves, float weights) {
-    #ifdef LQ_REALISTIC_CLOUD
-        octaves = (octaves + 1) / 2;
-    #endif
-
     cloudPos += frameTimeCounter * CLOUD_SPEED * vec3(10.0, -10.0, 5.0);
     float density = baseCloudNoise(cloudPos.xz * 0.00001 / CLOUD_SCALE);
     float weight = 1.0;
@@ -167,13 +163,8 @@ float atmosphereAbsorption(float RdotP, float cloudDistance) {
     return absorption;
 }
 
-#ifdef LQ_REALISTIC_CLOUD
-    const float cloudDensityWeights = (1.0 - pow(CLOUD_REALISTIC_OCTAVE_FADE, (CLOUD_REALISTIC_OCTAVES + 1) / 2 + 1.0)) / ((1.0 - CLOUD_REALISTIC_OCTAVE_FADE) * CLOUD_REALISTIC_HARDNESS * 10.0);
-    const float cloudShadowDensityWeights = (1.0 - pow(CLOUD_REALISTIC_OCTAVE_FADE, (CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES + 1) / 2 + 1.0)) / ((1.0 - CLOUD_REALISTIC_OCTAVE_FADE) * CLOUD_REALISTIC_HARDNESS * 10.0);
-#else
-    const float cloudDensityWeights = (1.0 - pow(CLOUD_REALISTIC_OCTAVE_FADE, CLOUD_REALISTIC_OCTAVES + 1.0)) / ((1.0 - CLOUD_REALISTIC_OCTAVE_FADE) * CLOUD_REALISTIC_HARDNESS * 10.0);
-    const float cloudShadowDensityWeights = (1.0 - pow(CLOUD_REALISTIC_OCTAVE_FADE, CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES + 1.0)) / ((1.0 - CLOUD_REALISTIC_OCTAVE_FADE) * CLOUD_REALISTIC_HARDNESS * 10.0);
-#endif
+const float cloudDensityWeights = (1.0 - pow(CLOUD_REALISTIC_OCTAVE_FADE, CLOUD_REALISTIC_OCTAVES + 1.0)) / ((1.0 - CLOUD_REALISTIC_OCTAVE_FADE) * CLOUD_REALISTIC_HARDNESS * 10.0);
+const float cloudShadowDensityWeights = (1.0 - pow(CLOUD_REALISTIC_OCTAVE_FADE, CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES + 1.0)) / ((1.0 - CLOUD_REALISTIC_OCTAVE_FADE) * CLOUD_REALISTIC_HARDNESS * 10.0);
 
 vec4 sampleRealisticCloud(vec3 cloudPos, vec3 sunDir, vec3 atmosphere) {
     vec3 relativeCloudPos = cloudPos - vec3(cameraPosition.x + CLOUD_REALISTIC_OFFSET_X, 0.0, cameraPosition.z + CLOUD_REALISTIC_OFFSET_Z);
@@ -267,13 +258,8 @@ vec4 realisticCloud(
     cloudDepth = -1.0;
     if (hit) {
         float cloudTransmittance = 1.0;
-        #ifdef LQ_REALISTIC_CLOUD
-            float stepSize = (endIntersection - startIntersection) / (CLOUD_REALISTIC_LQ_SAMPLES + 1.0);
-            float startNoise = stepSize * 0.5;
-        #else
-            float stepSize = (endIntersection - startIntersection) / (CLOUD_REALISTIC_HQ_SAMPLES + 1.0);
-            float startNoise = stepSize * bayer64Temporal(gl_FragCoord.xy);
-        #endif
+        float stepSize = (endIntersection - startIntersection) / (CLOUD_REALISTIC_HQ_SAMPLES + 1.0);
+        float startNoise = stepSize * bayer64Temporal(gl_FragCoord.xy);
         float stepTransmittance = -stepSize * CLOUD_REALISTIC_SAMPLE_DENSITY * 1.44269502;
         cloudPos += worldDir * (startIntersection + startNoise);
         cloudPos.xz += cameraPosition.xz + vec2(CLOUD_REALISTIC_OFFSET_X, CLOUD_REALISTIC_OFFSET_Z);
@@ -282,12 +268,7 @@ vec4 realisticCloud(
         float unHitted = 1.0;
         vec3 cloudColor = vec3(0.0);
         cloudDepth = startIntersection + startNoise;
-        #ifdef LQ_REALISTIC_CLOUD
-            for (int i = 0; i < CLOUD_REALISTIC_LQ_SAMPLES; i++)
-        #else
-            for (int i = 0; i < CLOUD_REALISTIC_HQ_SAMPLES; i++)
-        #endif
-        {
+        for (int i = 0; i < CLOUD_REALISTIC_HQ_SAMPLES; i++) {
             vec4 sampleCloud = sampleRealisticCloud(cloudPos, sunDir, (skyColorUp + atmosphere) * vec3(0.5) / PI);
             float sampleTransmittance = exp2(sampleCloud.w * stepTransmittance) * cloudTransmittance;
             cloudColor += (cloudTransmittance - sampleTransmittance) * sampleCloud.rgb;
