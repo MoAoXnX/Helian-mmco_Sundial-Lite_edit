@@ -13,7 +13,7 @@
 //  https://github.com/GeForceLegend/Sundial-Lite
 //  https://www.gnu.org/licenses/gpl-3.0.en.html
 //
-//  Gbuffer for Distant Horizons transparent terrain
+//  Gbuffer for Distant Horizons translucent terrain
 //
 
 #extension GL_ARB_gpu_shader5 : enable
@@ -98,7 +98,7 @@ void main() {
     weight = max(NdotV, curveStart) - weight;
     normal = viewDir * weight + edgeNormal * max(0.0, inversesqrt(dot(edgeNormal, edgeNormal) / (1.0 - weight * weight)));
     float fadeFactor = viewDepthInv * curveStart * gbufferProjection[1].y * screenSize.y;
-    normal = mix(tbnMatrix[2], normal, fadeFactor / (fadeFactor + 0.1));
+    normal = mix(tbnMatrix[2], normal, fadeFactor / (fadeFactor + 0.2));
     rawData.normal = normal;
 
     packUpGbufferDataSolid(rawData, gbufferData0, gbufferData1, gbufferData2);
