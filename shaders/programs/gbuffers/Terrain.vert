@@ -31,11 +31,11 @@ layout(location = 11) in vec4 mc_midTexCoord;
 out vec4 texlmcoord;
 out vec3 color;
 out vec3 viewPos;
+out vec4 coordRange;
 
-noperspective out vec4 coordRange;
 flat out int material;
 
-// #define MOD_PLANT_DETECTION
+#define MOD_PLANT_DETECTION
 
 #include "/settings/GlobalSettings.glsl"
 #include "/libs/Uniform.glsl"

@@ -29,11 +29,11 @@ in vec2 texcoord;
 // Volumetric Light
     #define VOLUMETRIC_LIGHT
 
-    #define VL_STRENGTH 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0]
+    #define VL_STRENGTH 1.5 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0]
     #define VL_SAMPLES 8 // [2 3 4 5 6 7 8 10 12 14 16 20 24 28 32]
     #define MORNING_VL_STRENGTH 3.0 // [0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0]
     #define NOON_VL_STRENGTH 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0]
-    #define WATER_VL_STRENGTH 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0]
+    #define WATER_VL_STRENGTH 0.6 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0]
 
 // Volumetric Fog
     #define VOLUMETRIC_FOG
@@ -44,7 +44,7 @@ in vec2 texcoord;
     #define VOLUMETRIC_FOG_CENTER_HEIGHT 80 // [-60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210 220 230 240 250 260 270 280 290 300 310 320]
     #define VOLUMETRIC_FOG_THICKNESS 128 // [2 4 6 8 12 16 20 24 28 32 40 48 56 64 80 96 112 128 144 160 176 192 218 224 240 256]
 
-    #define VOLUMETRIC_FOG_MORNING_DENSITY 2.0 // [0.0 0.01 0.02 0.03 0.04 0.05 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 0.22 0.24 0.26 0.28 0.3 0.33 0.36 0.4 0.43 0.46 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0]
+    #define VOLUMETRIC_FOG_MORNING_DENSITY 1.0 // [0.0 0.01 0.02 0.03 0.04 0.05 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 0.22 0.24 0.26 0.28 0.3 0.33 0.36 0.4 0.43 0.46 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0]
     #define VOLUMETRIC_FOG_NOON_DENSITY 0.1  // [0.0 0.01 0.02 0.03 0.04 0.05 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 0.22 0.24 0.26 0.28 0.3 0.33 0.36 0.4 0.43 0.46 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0]
 
     #define VOLUMETRIC_FOG_SCALE 5.0 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 5.5 6.0 6.5 7.0 7.5 8.0 9.5 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0]
@@ -234,8 +234,8 @@ void main() {
         #ifdef SHADOW_AND_SKY
             vanillaLight +=
                 pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75) *
-                (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * weatherStrength)) *
-                (1.0 - gbufferData.metalness) * (1.0 - 0.75 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
+                (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * weatherStrength)) *
+                (1.0 - gbufferData.metalness) * (ENVIROMENT_BRIGHTNESS - 0.7 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
         #endif
         #ifdef IS_IRIS
             float eyeRelatedDistance = length(waterWorldPos + relativeEyePosition);
@@ -261,7 +261,7 @@ void main() {
                 );
                 shadow *= (1.0 - gbufferData.metalness) * gbufferData.albedo.rgb * gbufferData.albedo.w * isTargetParticle + sunlightSpecular(
                     waterWorldDir, shadowDirection, worldNormal, gbufferData.smoothness * 0.995, NdotL, LdotH, f0, vec3(1.0)
-                ) * airAbsorption(11.4 * gbufferData.smoothness) * clamp(19.0 - gbufferData.smoothness * 20.0, 0.0, 1.0);
+                ) * airAbsorption(11.4 * gbufferData.smoothness) * clamp((19.0 + SLSR_TEST1) - gbufferData.smoothness * (20.0 - SLSR_TEST1), 0.0, 1.0);
                 shadow += subsurfaceScattering * (1.0 - gbufferData.metalness) * gbufferData.albedo.rgb * gbufferData.albedo.w * isTargetParticle;
                 #ifdef CLOUD_SHADOW
                     shadow *= cloudShadow(waterWorldPos, shadowDirection);
@@ -291,7 +291,7 @@ void main() {
         #else
             #ifdef SHADOW_AND_SKY
                 #ifdef ATMOSPHERE_SCATTERING_FOG
-                    float atmosphereDepth = mix(waterViewDepthNoLimit * (1.0 + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 1600.0, step(0.999999, waterDepth));
+                    float atmosphereDepth = mix(waterViewDepthNoLimit * (ASF_GROUND_EXTRA_DENSITY + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 1600.0, step(0.999999, waterDepth));
                     solidColor.rgb = solidAtmosphereScattering(solidColor.rgb, waterWorldDir, skyColorUp, atmosphereDepth, eyeBrightnessSmooth.y / 240.0);
                 #endif
             #endif
@@ -357,8 +357,8 @@ void main() {
                 #endif
                 vec3 stepAbsorption = exp2(absorptionBeta);
                 vec3 skyScattering =
-                    (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * weatherStrength)) *
-                    (1.0 - 0.75 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength) * eyeBrightnessSmooth.y / 1000.0;
+                    (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * weatherStrength)) *
+                    (ENVIROMENT_BRIGHTNESS - 0.7 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength) * eyeBrightnessSmooth.y / 1000.0;
                 stepLength *= -0.01 * 1.44269502 / max(1e-5, basicWeight);
 
                 for (int i = 0; i < VL_SAMPLES; i++) {
@@ -410,8 +410,8 @@ void main() {
         float weatherLightData = abs(weatherData);
         if (weatherLightData > 0.3) {
             float sunlightStrength = 2.0 * weatherLightData - 1.0;
-            float basicSunlight = (1.0 - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * sqrt(weatherStrength)) * 8.0 * SUNLIGHT_BRIGHTNESS;
-            vec3 weatherLight = sunlightStrength * basicSunlight * sunColor + skyColorUp * (1.0 - 0.75 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
+            float basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
+            vec3 weatherLight = sunlightStrength * basicSunlight * sunColor + skyColorUp * (ENVIROMENT_BRIGHTNESS - 0.7 * weatherStrength);
             float weatherBlendWeight = clamp(weatherData * 1e+10, 0.0, 1.0) * 0.8 + 0.2;
             solidColor.rgb = mix(solidColor.rgb, weatherLight, weatherBlendWeight);
         }

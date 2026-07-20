@@ -1,6 +1,6 @@
-const vec3 rayleighBeta = vec3(5.2e-6, 12.1e-6, 29.6e-6);
+const vec3 rayleighBeta = vec3(4.2e-6, 10.1e-6, 29.6e-6);
 const float mieBeta = 2.1e-5;
-const float rayLeighScaledHeight = 8500.0;
+const float rayLeighScaledHeight = 10500.0;
 const float mieScaledHeight = 1200.0;
 const vec2 scaledHeight = vec2(rayLeighScaledHeight, mieScaledHeight);
 const float mieG = 0.76;
@@ -144,7 +144,7 @@ vec3 singleAtmosphereScattering(
             totalInScattering *= 0.5;
             totalInScattering += (prevRayleighInScattering + prevMieInScattering) * 0.15 * abs(dot(sunDir, normalize(samplePosition)));
 
-            atmosphere = totalInScattering * sunLightStrength * SUNLIGHT_BRIGHTNESS + skyColorUp * exp2(-opticalDepth.x * rayleighBeta - opticalDepth.y * rainyMieBeta) * 0.2;
+            atmosphere = totalInScattering * sunLightStrength * SKYBRIGHTNESS + skyColorUp * exp2(-opticalDepth.x * rayleighBeta - opticalDepth.y * rainyMieBeta) * 0.2;
 
             result += atmosphere;
         }
@@ -220,7 +220,7 @@ vec3 atmosphereScatteringUp(float lightHeight, float sunLightStrength) {
         vec3 totalInScattering = totalRayleighInScattering * rayleighBeta + totalMieInScattering * rainyMieBeta;
         totalInScattering *= 0.5;
 
-        result = totalInScattering * sunLightStrength * SUNLIGHT_BRIGHTNESS;
+        result = totalInScattering * sunLightStrength * SKYBRIGHTNESS;
     }
     return result;
 }
@@ -262,11 +262,11 @@ vec3 solidAtmosphereScattering(vec3 color, vec3 worldDir, vec3 skyColor, float w
     float g2 = g * g;
     sunLightColor *= rayleighPhase(LdotV) + miePhase(LdotV, g, g2);
     moonLightColor *= (rayleighPhase(-LdotV) + miePhase(-LdotV, g, g2)) * mix(NIGHT_BRIGHTNESS, NIGHT_VISION_BRIGHTNESS, nightVision);
-    vec3 scatteringColor = mix((sunLightColor + moonLightColor) * 30.0, skyColor * 0.25, sqrt(weatherStrength) * 0.99) * skyLight * skyLight;
+    vec3 scatteringColor = mix((sunLightColor + moonLightColor) * 30.0, skyColor * 0.25, sqrt(weatherStrength) * 0.79) * skyLight * skyLight;
 
     vec2 originRelativeHeight = earthScaledHeight - playerHeight / scaledHeight * 1.44269502;
     vec2 originDensity = exp2(originRelativeHeight);
-    vec2 opticalDepth = originDensity * worldDepth * 5.0 * (1.0 + RF_DENSITY * 5.0 * weatherStrength * weatherStrength);
+    vec2 opticalDepth = originDensity * worldDepth * 5.0 * (ASF_DENSITY + RF_DENSITY * 5.0 * weatherStrength * weatherStrength);
     vec3 absorption = exp2(-opticalDepth.x * rayleighBeta - opticalDepth.y * rainyMieBeta);
     return mix(scatteringColor, color, absorption);
 }
@@ -339,7 +339,7 @@ float endFogAbsorption(float endDepth) {
 }
 
 vec3 endFogScattering(float endDepth) {
-    return END_FOG_BRIGHTNESS * 0.1 * (1.0 - exp(-endDepth * endAbsorptionBeta)) * vec3(0.5, 0.2, 0.8);
+    return END_FOG_BRIGHTNESS * 0.1 * (1.0 - exp(-endDepth * endAbsorptionBeta)) * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B);
 }
 
 vec3 endFogTotal(vec3 targetColor, float endDepth) {

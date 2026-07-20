@@ -185,7 +185,7 @@ vec3 sunlightSpecular(vec3 viewDir, vec3 lightDir, vec3 normal, float smoothness
     }
     float LdotH = sqrt(clamp(LdotH2, 0.0, 1.0));
 
-    float roughness = pow2(1.0 - smoothness);
+    float roughness = pow2((1.0 + SUNLIGHTSPECULARROUGH) - smoothness);
     vec3 reflectDir = viewDir + 2.0 * NdotV * normal;
     float NdotH2 = clamp(dot(reflectDir, lightDir) * 1.0001 * 0.5 + 0.0001 * 0.5 + 0.5, 0.0, 1.0);
 
@@ -196,7 +196,7 @@ vec3 sunlightSpecular(vec3 viewDir, vec3 lightDir, vec3 normal, float smoothness
 }
 
 float groundWetStrength(vec3 position, float normalDir, float metalness, float porosity, float outdoor) {
-    position *= 0.004;
+    position *= RAIN_PUDDLE_SCALE;
     position.y *= 0.2;
     float noise = smooth3DNoise(position);
     float weight = 1.0;

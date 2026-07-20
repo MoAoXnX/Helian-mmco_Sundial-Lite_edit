@@ -132,11 +132,11 @@ float baseCloudNoise(vec2 coord) {
 }
 
 float realisticCloudDensity(vec3 cloudPos, vec3 wind, float cloudDistance, int octaves, float weights) {
-    cloudPos += frameTimeCounter * CLOUD_SPEED * vec3(50.0, 0.0, 25.0);
+    cloudPos += frameTimeCounter * CLOUD_SPEED * vec3(10.0, -10.0, 5.0);
     float density = baseCloudNoise(cloudPos.xz * 0.00001 / CLOUD_SCALE);
     float weight = 1.0;
     for (int i = 0; i < octaves; i++) {
-        cloudPos = -cloudPos * CLOUD_REALISTIC_OCTAVE_SCALE - wind;
+        cloudPos = cloudPos * CLOUD_REALISTIC_OCTAVE_SCALE + wind;
         weight *= CLOUD_REALISTIC_OCTAVE_FADE;
         density += smooth3DNoise(cloudPos * 0.000015 / CLOUD_SCALE) * weight;
     }
@@ -170,7 +170,7 @@ vec4 sampleRealisticCloud(vec3 cloudPos, vec3 sunDir, vec3 atmosphere) {
     vec3 relativeCloudPos = cloudPos - vec3(cameraPosition.x + CLOUD_REALISTIC_OFFSET_X, 0.0, cameraPosition.z + CLOUD_REALISTIC_OFFSET_Z);
     float cloudDistance2 = dot(relativeCloudPos, relativeCloudPos);
     float cloudDistance = inversesqrt(cloudDistance2);
-    vec3 wind = -CLOUD_REALISTIC_OCTAVE_SCALE * frameTimeCounter * CLOUD_SPEED * vec3(50.0, 0.0, 25.0);
+    vec3 wind = CLOUD_REALISTIC_OCTAVE_SCALE * frameTimeCounter * CLOUD_SPEED * vec3(10.0, -10.0, 5.0);
     vec4 result = vec4(0.0);
     result.w = realisticCloudDensity(cloudPos, wind, cloudDistance2 * cloudDistance, CLOUD_REALISTIC_OCTAVES, cloudDensityWeights);
     if (result.w > 1e-5) {
@@ -390,17 +390,17 @@ float cloudShadowRealistic(vec3 worldPos, vec3 shadowDir) {
 
     float cloudTransmittance = 1.0;
     if (hit) {
-        vec3 wind = CLOUD_REALISTIC_OCTAVE_SCALE * frameTimeCounter * CLOUD_SPEED * vec3(50.0, 0.0, 25.0) * 0.000015 / CLOUD_SCALE * 64.0;
+        vec3 wind = CLOUD_REALISTIC_OCTAVE_SCALE * frameTimeCounter * CLOUD_SPEED * vec3(10.0, -10.0, 5.0) * 0.000015 / CLOUD_SCALE * 64.0;
 
         vec3 cloudPos = worldPos + vec3(cameraPosition.x + CLOUD_REALISTIC_OFFSET_X, 0.0, cameraPosition.z + CLOUD_REALISTIC_OFFSET_Z) + shadowDir * startIntersection;
-        cloudPos += frameTimeCounter * CLOUD_SPEED * vec3(50.0, 0.0, 25.0);
+        cloudPos += frameTimeCounter * CLOUD_SPEED * vec3(10.0, -10.0, 5.0);
         cloudTransmittance = baseCloudShadowNoise(cloudPos.xz * 0.00001 / CLOUD_SCALE * 64.0);
         float weight = 1.0;
         cloudPos = -cloudPos * CLOUD_REALISTIC_OCTAVE_SCALE * 0.000015 / CLOUD_SCALE * 64.0 + wind;
         for (int i = 0; i < CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES; i++) {
             weight *= CLOUD_REALISTIC_OCTAVE_FADE;
             cloudTransmittance += cloudShadowNoise(cloudPos) * weight;
-            cloudPos = -cloudPos * CLOUD_REALISTIC_OCTAVE_SCALE + wind;
+            cloudPos = cloudPos * CLOUD_REALISTIC_OCTAVE_SCALE + wind;
         }
         const float weights = (1.0 - pow(CLOUD_REALISTIC_OCTAVE_FADE, CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES + 1.0)) / ((1.0 - CLOUD_REALISTIC_OCTAVE_FADE) * CLOUD_REALISTIC_HARDNESS * 10.0);
         const float baseCloudAmount = CLOUD_REALISTIC_AMOUNT * CLOUD_REALISTIC_HARDNESS * 10.0;

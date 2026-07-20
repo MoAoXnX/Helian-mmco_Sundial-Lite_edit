@@ -27,7 +27,7 @@ in vec2 texcoord;
     const vec3 skyColorUp = vec3(0.0);
 #endif
 
-#define VB_TRACE_COUNT 1 // [1 2 3 4 5 6 7 8]
+#define VB_TRACE_COUNT 1 // [0 1 2 3 4 5 6 7 8]
 #define VB_STEPS 16 // [4 6 8 12 16 20 24 32 40 48 64 80 96 112 128]
 #define VB_GI_LENGTH 514.0 // [64.0 80.0 96.0 114.0 128.0 160.0 192.0 224.0 256.0 320.0 384.0 448.0 514.0 640.0 768.0 896.0 1024.0 1280.0 1536.0 1792.0 2048.0]
 #define VB_AO_LENGTH 128.0 // [64.0 80.0 96.0 114.0 128.0 160.0 192.0 224.0 256.0 320.0 384.0 448.0 514.0 640.0 768.0 896.0 1024.0 1280.0 1536.0 1792.0 2048.0]
@@ -425,8 +425,8 @@ void main() {
         #ifdef SHADOW_AND_SKY
             lightColor +=
                 skyLightStrength *
-                (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * weatherStrength)) *
-                (1.0 - 0.75 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
+                (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - (0.75 + 0.25 * float(CLOUD_TYPE != 2)) * weatherStrength)) *
+                (ENVIROMENT_BRIGHTNESS - 0.7 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
         #endif
         lightColor *= (1.0 - currData.w * (1.0 - 0.15 * blendWeight));
         #ifdef VBGI

@@ -1,3 +1,11 @@
+# Helian-MMCO (Sundial lite edit)
+
+Personal simple modification of Sundial-lite.
+
+[![CurseForge](https://img.shields.io/curseforge/dt/1578321?color=F16436&label=CurseForge&logo=curseforge)](https://www.curseforge.com/minecraft/shaders/helian-mmco-sundial-lite-edit)
+
+![6748](https://github.com/user-attachments/assets/620e4f18-51cb-493a-a4b5-cf4138a30aad)
+
 # Sundial Lite
 
 Sundial Lite is the free and open source version of Sundial, using [GNU General Public Licence 3.0](./LICENSE). It's designed to make the balance between quality, performance and compatibility. For the full version which is still not complete and need subscription for early testing versions, visit [Aifadian](https://afdian.com/a/geforcelegend). For legit issues, I'll try avoid using platforms blocked by GFW like Patreon, so sorry for some users having issue signing in this site.
