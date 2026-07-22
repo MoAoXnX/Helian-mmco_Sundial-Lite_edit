@@ -156,6 +156,7 @@ option.WATER_CAUSTIC=Underwater caustic
 option.CLOUD_SHADOW=Cloud shadow
 option.LIGHT_LEAKING_FIX=Light leaking fix
 option.LIGHT_LEAKING_FIX.comment=Fix light leaking underground. May cause issues with underwater caustics and large hanging buildings
+option.ambientOcclusionLevel=Vanilla AO
 
 # Lighting
 option.MOD_LIGHT_DETECTION=Mod light detection

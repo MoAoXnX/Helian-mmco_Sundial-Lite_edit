@@ -167,6 +167,7 @@ option.WATER_CAUSTIC=水下焦散
 option.CLOUD_SHADOW=云影
 option.LIGHT_LEAKING_FIX=漏光修复
 option.LIGHT_LEAKING_FIX.comment=修复地底漏光的情况. 会导致较深水底没有焦散、大型建筑阴影出错等问题. 建议非必要不使用
+option.ambientOcclusionLevel=原版AO
 
 # Lighting
 option.MOD_LIGHT_DETECTION=模组光源检测
