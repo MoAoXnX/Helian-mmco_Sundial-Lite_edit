@@ -114,26 +114,29 @@ void main() {
 
     float wetStrength = 0.0;
     vec3 mcPos = viewToWorldPos(viewPos) + cameraPosition;
+    vec3 worldGeoNormal = mat3(gbufferModelViewInverse) * rawData.geoNormal;
     if (rainyStrength > 0.0) {
-        vec3 worldNormal = mat3(gbufferModelViewInverse) * rawData.geoNormal;
         float outdoor = clamp(15.0 * rawData.lightmap.y - 14.0, 0.0, 1.0);
         if (rawData.materialID == MAT_WATER) {
-            wetStrength = outdoor * clamp(abs(worldNormal.y) * 10.0 - 0.1, 0.0, 1.0);
+            wetStrength = outdoor * clamp(abs(worldGeoNormal.y) * 10.0 - 0.1, 0.0, 1.0);
         }
         else {
             #if RAIN_PUDDLE == 1
-                wetStrength = (1.0 - rawData.metalness) * clamp(worldNormal.y * 10.0 - 0.1, 0.0, 1.0) * outdoor * rainyStrength;
+                wetStrength = (1.0 - rawData.metalness) * clamp(worldGeoNormal.y * 10.0 - 0.1, 0.0, 1.0) * outdoor * rainyStrength;
             #elif RAIN_PUDDLE == 2
-                wetStrength = groundWetStrength(mcPos, worldNormal.y, rawData.metalness, 0.0, outdoor);
+                wetStrength = groundWetStrength(mcPos, worldGeoNormal.y, rawData.metalness, 0.0, outdoor);
             #endif
         }
         rawData.smoothness += (1.0 - rawData.smoothness) * wetStrength;
     }
 
+    float viewDepthInv = inversesqrt(dot(viewPos.xyz, viewPos.xyz));
     #ifdef PHYSICS_OCEAN
-        rawData.normal = mat3(gbufferModelView) * (physics_waveData.normal * vec3(0.5, 1.0, 0.5));
-        rawData.normal = -signI(dot(rawData.normal, viewPos.xyz)) * rawData.normal;
-        rawData.geoNormal = -signI(dot(rawData.geoNormal, viewPos.xyz)) * rawData.geoNormal;
+        #ifndef PHYSICS_OCEAN_V2
+            physics_waveData.normal.xz *= 0.5;
+        #endif
+        rawData.normal = mat3(gbufferModelView) * physics_waveData.normal;
+        rawData.normal = signI(dot(rawData.normal, rawData.geoNormal)) * rawData.normal;
         #if WATER_TYPE == 0
             rawData.albedo.rgb = color.rgb;
         #else
@@ -171,7 +174,6 @@ void main() {
             #endif
         }
 
-        float viewDepthInv = inversesqrt(dot(viewPos.xyz, viewPos.xyz));
         vec3 rippleNormal = vec3(0.0, 0.0, 1.0);
         #ifdef RAIN_RIPPLES
             rippleNormal = rainRippleNormal(mcPos);
@@ -179,16 +181,20 @@ void main() {
         #endif
         rawData.normal.xy += rippleNormal.xy * wetStrength;
         rawData.normal = normalize(tbnMatrix * rawData.normal);
+    #endif
 
-        vec3 viewDir = viewPos.xyz * (-viewDepthInv);
-        float NdotV = dot(rawData.normal, viewDir);
-        vec3 edgeNormal = rawData.normal - viewDir * NdotV;
-        float curveStart = dot(viewDir, rawData.geoNormal);
-        float weight = clamp(curveStart - curveStart * exp(NdotV / curveStart - 1.0), 0.0, 1.0);
-        weight = max(NdotV, curveStart) - weight;
-        rawData.normal = viewDir * weight + edgeNormal * max(0.0, inversesqrt(dot(edgeNormal, edgeNormal) / (1.0 - weight * weight)));
-        float fadeFactor = viewDepthInv * curveStart * gbufferProjection[1].y * screenSize.y;
-        rawData.normal = mix(tbnMatrix[2], rawData.normal, fadeFactor / (fadeFactor + 0.2));
+    vec3 viewDir = viewPos.xyz * (-viewDepthInv);
+    float NdotV = dot(rawData.normal, viewDir);
+    vec3 edgeNormal = rawData.normal - viewDir * NdotV;
+    float curveStart = dot(viewDir, rawData.geoNormal);
+    float weight = clamp(curveStart - curveStart * exp(NdotV / curveStart - 1.0), 0.0, 1.0);
+    weight = max(NdotV, curveStart) - weight;
+    rawData.normal = viewDir * weight + edgeNormal * max(0.0, inversesqrt(dot(edgeNormal, edgeNormal) / (1.0 - weight * weight)));
+    float fadeFactor = viewDepthInv * curveStart * gbufferProjection[1].y * screenSize.y;
+    rawData.normal = mix(tbnMatrix[2], rawData.normal, fadeFactor / (fadeFactor + 0.2));
+    #ifdef PHYSICS_OCEAN
+        rawData.geoNormal = gbufferModelView[1].xyz;
+        rawData.geoNormal *= signI(worldGeoNormal.y);
     #endif
 
     packUpGbufferDataSolid(rawData, gbufferData0, gbufferData1, gbufferData2);
