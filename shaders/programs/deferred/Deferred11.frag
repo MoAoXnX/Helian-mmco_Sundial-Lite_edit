@@ -324,7 +324,7 @@ void main() {
 
             vec3 shadow = sunColor;
             #ifdef END_FLASH
-                shadow = endFlashIntensity * vec3(0.5, 0.2, 0.8) * basicSunlight;
+                shadow = endFlashIntensity * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B);
             #endif
             float NdotL = clamp(dot(gbufferData.normal, viewShadowDirection), 0.0, 1.0);
             vec3 shadowDiffuse = gbufferData.albedo.rgb * diffuseAbsorption;
