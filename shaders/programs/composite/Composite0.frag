@@ -275,6 +275,11 @@ vec4 reflection(GbufferData gbufferData, float depth, vec3 f0, vec3 f82, float f
                 if (hitSky) {
                     reflectionColor.rgb += endStars(rayDir) * exp2(50.0 * (gbufferData.smoothness - 1.0));
                 }
+                #ifdef END_FLASH
+                    reflectionColor.rgb +=
+                        SUNLIGHT_BRIGHTNESS * endFlashIntensity * PI * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B) * miePhase(dot(rayDir, shadowDirection), 0.6, 0.36) *
+                        (1.0 - endFogAbsorption(reflectionColor.w));
+                #endif
             #elif defined NETHER
                 reflectionColor.rgb = netherFogTotal(reflectionColor.rgb, reflectionColor.w);
             #else

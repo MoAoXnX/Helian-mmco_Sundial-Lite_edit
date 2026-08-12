@@ -20,10 +20,6 @@ layout(location = 0) out vec4 gbufferData0;
 layout(location = 1) out vec4 gbufferData1;
 layout(location = 2) out vec4 gbufferData2;
 
-#if MC_VERSION < 11300
-    in mat3 tbnMatrix;
-#endif
-
 in vec4 color;
 in vec4 texlmcoord;
 in vec3 viewPos;
@@ -41,6 +37,10 @@ noperspective in vec4 coordRange;
 #include "/libs/GbufferData.glsl"
 #include "/libs/Common.glsl"
 #include "/libs/Parallax.glsl"
+
+#ifdef ENTITY_VERTEX_TBN
+    in mat3 vertexTbnMatrix;
+#endif
 
 #if defined PARTICLE && defined ENTITY_PARALLAX
     #undef ENTITY_PARALLAX
@@ -94,8 +94,10 @@ vec2 calcTextureScale(vec2 dCoordDX, vec2 dCoordDY, vec3 position) {
     vec3 bitangentHelper = dPosDY * dCoordDX.y - dPosDX * dCoordDY.y;
     vec3 bitangent = cross(bitangentHelper, normal);
 
-    float tangentLen = inversesqrt(dot(tangent, tangent));
-    float bitangentLen = inversesqrt(dot(bitangent, bitangent));
+    float tangentLen = dot(tangent, tangent);
+    tangentLen = inversesqrt(tangentLen + float(tangentLen == 0.0));
+    float bitangentLen = dot(bitangent, bitangent);
+    bitangentLen = inversesqrt(bitangentLen + float(bitangentLen == 0.0));
 
     vec2 textureScale = vec2(tangentLen * dot(tangentHelper, tangentHelper), bitangentLen * dot(bitangentHelper, bitangentHelper));
 
@@ -109,10 +111,25 @@ void main() {
     vec2 texGradX = dFdx(texcoord);
     vec2 texGradY = dFdy(texcoord);
     vec2 textureScale;
-    #if MC_VERSION >= 11300
+    #if !defined ENTITY_VERTEX_TBN || defined PARTICLE
         mat3 tbnMatrix = calcTbnMatrix(texGradX, texGradY, viewPos.xyz, textureScale);
     #else
         textureScale = calcTextureScale(texGradX, texGradY, viewPos.xyz);
+        // Gram-Schmidt process fron learnOpenGL
+        vec3 T = vertexTbnMatrix[0];
+        float TL = dot(T, T);
+        T *= inversesqrt(TL + float(TL == 0.0));
+        vec3 N = vertexTbnMatrix[2];
+        float NL = dot(N, N);
+        N *= inversesqrt(NL + float(NL == 0.0));
+        // re-orthogonalize T with respect to N
+        T = T - dot(T, N) * N;
+        TL = dot(T, T);
+        T *= inversesqrt(TL + float(TL == 0.0));
+        // then retrieve perpendicular vector B with the cross product of T and N
+        vec3 B = cross(T, N);
+
+        mat3 tbnMatrix = mat3(T, B * signI(dot(B, vertexTbnMatrix[1])), N);
     #endif
     #if SR_ENABLE
         texGradX *= renderScale.x;
@@ -193,7 +210,7 @@ void main() {
             fixedCoordRange = vec4(0.0, 0.0, 1.0, 1.0);
         }
         float parallaxScale = ENTITY_TEXTURE_RESOLUTION / max(textureScale.x * albedoTexSize.x, textureScale.y * albedoTexSize.y);
-        textureScale *= parallaxScale;
+        textureScale *= max(parallaxScale, 0.0);
         vec2 pixelScale = albedoTexSize * textureScale;
         vec2 quadSize = 1.0 / fixedCoordRange.zw;
         vec3 anisotropicParam = anisotropicOffsetLod(albedoTexSize, albedoTexelSize, texGradX, texGradY, quadSize);
