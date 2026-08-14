@@ -21,6 +21,7 @@ screen.Atmosphere=大气效果
 screen.Atmosphere.comment=体积云、体积光与各种雾气等
 screen.ATMOSPHERE_SCATTERING_FOG_OPTIONS=大气散射雾选项
 screen.RainFog=雨雾
+screen.WaterFog=水雾
 screen.VolumetricLight=体积光
 screen.VolumetricFog=体积雾
 screen.VolumetricFog.comment=体积雾集成在体积光中. 体积雾的采样数与体积光相同. 关闭体积光会一起关闭体积雾
@@ -44,6 +45,7 @@ screen.Exposure=曝光
 screen.DepthOfField=景深
 screen.ChromaticDispersion=色散
 screen.Sharpening=锐化
+screen.TAA=时间性抗锯齿
 screen.Weather=天气
 screen.RAIN_RIPPLES_OPTIONS=雨滴涟漪选项
 screen.ModSupport=Mod支持
@@ -214,36 +216,6 @@ option.VOLUMETRIC_LIGHT=体积光
 option.VOLUMETRIC_FOG=体积雾
 option.ATMOSPHERE_SCATTERING_FOG=大气散射雾
 option.ATMOSPHERE_SCATTERING_FOG.comment=与体积光或体积雾不同. 如果不喜欢刚进入黑暗室内时的蓝色雾气可以关闭此选项
-option.ASF_DENSITY=大气散射雾密度
-option.ASF_GROUND_EXTRA_DENSITY=大气散射雾地面额外密度
-option.ASF_GE_DENSITY_INREFL=反射中的大气散射雾地面额外密度
-# RainFog
-option.RF_DENSITY=雨雾密度
-option.RF_DENSITY.comment=雨雾整体的密度. 同时影响天空部分能见度和地面部分能见度
-option.RF_GROUND_EXTRA_DENSITY=雨雾地面额外密度
-option.RF_GROUND_EXTRA_DENSITY.comment=影响地面部分能见度
-option.RAIN_BLOOM_FOG_DENSITY=雨天泛光雾密度
-option.RAIN_BLOOM_FOG_DENSITY.comment=雨天时模糊远处物体. 仅在玩家位于露天地带时生效
-# VolumetricLight
-option.VL_STRENGTH=体积光强度
-option.VL_SAMPLES=体积光采样数
-option.MORNING_VL_STRENGTH=日出日落体积光强度
-option.NOON_VL_STRENGTH=正午半夜体积光强度
-# VolumetricFog
-option.VOLUMETRIC_FOG_AMOUNT=体积雾数量
-option.VOLUMETRIC_FOG_DENSITY=体积雾密度
-option.VOLUMETRIC_FOG_CENTER_HEIGHT=体积雾中心高度
-option.VOLUMETRIC_FOG_THICKNESS=体积雾厚度
-option.VOLUMETRIC_FOG_MORNING_DENSITY=日出日落体积雾密度
-option.VOLUMETRIC_FOG_NOON_DENSITY=正午半夜体积雾密度
-option.VOLUMETRIC_FOG_SPEED=体积雾速度
-option.VOLUMETRIC_FOG_SCALE=体积雾缩放
-option.VOLUMETRIC_FOG_OCTAVES=体积雾噪声层数
-option.VOLUMETRIC_FOG_OCTAVES.comment=噪声层数越多体积雾细节越多. 影响性能
-option.VOLUMETRIC_FOG_OCTAVE_SCALE=体积雾噪声每层缩放
-option.VOLUMETRIC_FOG_OCTAVE_SCALE.comment=每一层噪声相较上一层的大小缩放
-option.VOLUMETRIC_FOG_OCTAVE_FADE=体积雾噪声每层减淡
-option.VOLUMETRIC_FOG_OCTAVE_FADE.comment=每一层噪声相较上一层的权重减淡
 # CommonFog
 option.WATER_ABSORPTION_R=水雾吸收系数：红色
 option.WATER_ABSORPTION_R.comment=系数越大，水雾对该颜色的吸收越强
@@ -251,7 +223,6 @@ option.WATER_ABSORPTION_G=水雾吸收系数：绿色
 option.WATER_ABSORPTION_G.comment=系数越大，水雾对该颜色的吸收越强
 option.WATER_ABSORPTION_B=水雾吸收系数：蓝色
 option.WATER_ABSORPTION_B.comment=系数越大，水雾对该颜色的吸收越强
-option.WATER_VL_STRENGTH=水下体积光强度
 option.SNOW_FOG_DENSITY=细雪雾密度
 option.SNOW_FOG_DENSITY.comment=影响细雪内的能见度和细雪内散射的强度
 option.LAVA_FOG_DENSITY=岩浆雾密度
@@ -272,6 +243,50 @@ option.END_FOG_COLOR_R=末地雾颜色：红色
 option.END_FOG_COLOR_G=末地雾颜色：绿色
 option.END_FOG_COLOR_B=末地雾颜色：蓝色
 option.END_ENVIROMENT_BRIGHTNESS=末地环境光亮度
+option.WATER_VL_STRENGTH=水下体积光强度
+option.ASF_DENSITY=大气散射雾密度
+option.ASF_GROUND_EXTRA_DENSITY=大气散射雾地面额外密度
+option.ASF_GE_DENSITY_INREFL=反射中的大气散射雾地面额外密度
+# RainFog
+option.RF_DENSITY=雨雾密度
+option.RF_DENSITY.comment=雨雾整体的密度. 同时影响天空部分能见度和地面部分能见度
+option.RF_GROUND_EXTRA_DENSITY=雨雾地面额外密度
+option.RF_GROUND_EXTRA_DENSITY.comment=影响地面部分能见度
+option.RAIN_BLOOM_FOG_DENSITY=雨天泛光雾密度
+option.RAIN_BLOOM_FOG_DENSITY.comment=雨天时模糊远处物体. 仅在玩家位于露天地带时生效
+# WaterFog
+option.WATER_ABSORPTION_R=水雾吸收系数：红色
+option.WATER_ABSORPTION_R.comment=系数越大，水雾对该颜色的吸收越强
+option.WATER_ABSORPTION_G=水雾吸收系数：绿色
+option.WATER_ABSORPTION_G.comment=系数越大，水雾对该颜色的吸收越强
+option.WATER_ABSORPTION_B=水雾吸收系数：蓝色
+option.WATER_ABSORPTION_B.comment=系数越大，水雾对该颜色的吸收越强
+option.WATER_SCATTERING_R=水雾散射系数：红色
+option.WATER_SCATTERING_R.comment=被吸收的光线中有多少红色部分转化为散射
+option.WATER_SCATTERING_G=水雾散射系数：绿色
+option.WATER_SCATTERING_G.comment=被吸收的光线中有多少绿色部分转化为散射
+option.WATER_SCATTERING_B=水雾散射系数：蓝色
+option.WATER_SCATTERING_B.comment=被吸收的光线中有多少蓝色部分转化为散射
+# VolumetricLight
+option.VL_STRENGTH=体积光强度
+option.VL_SAMPLES=体积光采样数
+option.MORNING_VL_STRENGTH=日出日落体积光强度
+option.NOON_VL_STRENGTH=正午半夜体积光强度
+# VolumetricFog
+option.VOLUMETRIC_FOG_AMOUNT=体积雾数量
+option.VOLUMETRIC_FOG_DENSITY=体积雾密度
+option.VOLUMETRIC_FOG_CENTER_HEIGHT=体积雾中心高度
+option.VOLUMETRIC_FOG_THICKNESS=体积雾厚度
+option.VOLUMETRIC_FOG_MORNING_DENSITY=日出日落体积雾密度
+option.VOLUMETRIC_FOG_NOON_DENSITY=正午半夜体积雾密度
+option.VOLUMETRIC_FOG_SPEED=体积雾速度
+option.VOLUMETRIC_FOG_SCALE=体积雾缩放
+option.VOLUMETRIC_FOG_OCTAVES=体积雾噪声层数
+option.VOLUMETRIC_FOG_OCTAVES.comment=噪声层数越多体积雾细节越多. 影响性能
+option.VOLUMETRIC_FOG_OCTAVE_SCALE=体积雾噪声每层缩放
+option.VOLUMETRIC_FOG_OCTAVE_SCALE.comment=每一层噪声相较上一层的大小缩放
+option.VOLUMETRIC_FOG_OCTAVE_FADE=体积雾噪声每层减淡
+option.VOLUMETRIC_FOG_OCTAVE_FADE.comment=每一层噪声相较上一层的权重减淡
 
 # Cloud
 option.CLOUD_TYPE=云朵类型
@@ -335,7 +350,6 @@ option.CLOUD_REALISTIC_SHADOWLIGHT_STEPSCALE=体积云阴影光照采样步长�
 option.CLOUD_REALISTIC_FADE_DISTANCE=体积云消散距离
 
 # PostProcessing
-option.TAA=时间性抗锯齿
 option.DISTORTION_STRENGTH=畸变强度
 option.DISTORTION_STRENGTH.comment=正值会产生桶状畸变. 负值会产生枕状畸变
 option.BLOOM_INTENSITY=泛光强度
@@ -431,6 +445,12 @@ option.SHARPENING_DENOISE.comment=降低锐化过程中产生的噪声
 option.SHARPENING_SRENGTH=锐化强度
 option.SHARPENING_LIMIT=锐化限制
 option.SHARPENING_LIMIT.comment=锐化前后的变化限制，以避免产生不自然的结果
+# TAA
+option.TAA=时间性抗锯齿（TAA）
+option.TAA_HISTORY_WEIGHT=TAA 历史帧混合权重
+option.TAA_HISTORY_WEIGHT.comment=历史帧与当前帧混合时的权重. 较高的值能提升抗锯齿效果同时减少噪点，但是会增加拖影
+option.TAA_HISTORY_CLIP_VARIANCE=TAA 历史帧钳制方差
+option.TAA_HISTORY_CLIP_VARIANCE.comment=历史帧的颜色与当前帧临近像素颜色允许的差值. 较低的的值有助于减少拖影，但是会增加噪点
 
 # Weather
 option.RAIN_PUDDLE=雨天地面积水

@@ -425,7 +425,7 @@ void main() {
         #ifdef SHADOW_AND_SKY
             lightColor +=
                 skyLightStrength *
-                (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.4 - 0.25 * weatherStrength)) *
+                (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.3 - 0.25 * weatherStrength)) *
                 (ENVIROMENT_BRIGHTNESS - 0.7 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
         #endif
         lightColor *= (1.0 - currData.w * (1.0 - 0.15 * blendWeight));

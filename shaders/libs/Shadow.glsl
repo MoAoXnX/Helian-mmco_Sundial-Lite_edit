@@ -48,7 +48,7 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
     }
 
     #ifdef SHADOW_AND_SKY
-        float basicSunlight = (1.0) * 9.5 * SUNLIGHT_BRIGHTNESS;
+        float basicSunlight = 9.5 * SUNLIGHT_BRIGHTNESS;
     #elif defined END_FLASH
         float basicSunlight = 9.5 * SUNLIGHT_BRIGHTNESS;
     #else

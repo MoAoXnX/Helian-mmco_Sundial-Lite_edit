@@ -234,7 +234,7 @@ void main() {
         #ifdef SHADOW_AND_SKY
             vanillaLight +=
                 pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75) *
-                (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.4 - 0.25 * weatherStrength)) *
+                (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.3 - 0.25 * weatherStrength)) *
                 (1.0 - gbufferData.metalness) * (ENVIROMENT_BRIGHTNESS - 0.7 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength);
         #endif
         #ifdef IS_IRIS
@@ -363,9 +363,12 @@ void main() {
                 #if defined LIGHT_LEAKING_FIX && !defined END_FLASH
                     rayAbsorption *= pow(clamp(eyeBrightnessSmooth.y / 240.0 + 1e-4 + float(isEyeInWater == 1), 0.0, 1.0), exp(-0.5 * stepLength));
                 #endif
+                if (isEyeInWater == 1) {
+                    rayAbsorption *= waterScattering;
+                }
                 vec3 stepAbsorption = exp2(absorptionBeta);
                 vec3 skyScattering =
-                    (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.4 - 0.25 * weatherStrength)) *
+                    (skyColorUp * 0.8 + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.3 - 0.25 * weatherStrength)) *
                     (ENVIROMENT_BRIGHTNESS - 0.7 * (1.0 - exp2(-RF_DENSITY * 4.0)) * weatherStrength) * eyeBrightnessSmooth.y / 1000.0;
                 stepLength *= -0.01 * 1.44269502 / max(1e-5, basicWeight);
 
