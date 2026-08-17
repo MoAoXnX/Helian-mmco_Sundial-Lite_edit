@@ -278,7 +278,7 @@ vec4 reflection(GbufferData gbufferData, float depth, vec3 f0, vec3 f82, float f
                 #ifdef END_FLASH
                     reflectionColor.rgb +=
                         SUNLIGHT_BRIGHTNESS * endFlashIntensity * PI * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B) * miePhase(dot(rayDir, shadowDirection), 0.6, 0.36) *
-                        (1.0 - endFogAbsorption(reflectionColor.w));
+                        (1.0 - exp(-reflectionColor.w * (blindnessFactor + 0.003))) * 0.003 / (blindnessFactor + 0.003);
                 #endif
             #elif defined NETHER
                 reflectionColor.rgb = netherFogTotal(reflectionColor.rgb, reflectionColor.w);

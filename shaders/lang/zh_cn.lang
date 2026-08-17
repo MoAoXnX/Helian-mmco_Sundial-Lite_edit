@@ -41,6 +41,7 @@ screen.ToneMapping.comment=调整画面的色调与映射曲线
 screen.Uchimura=Uchimura设置
 screen.AgX=AgX设置
 screen.AgX_Pure=AgX调色
+screen.GT7=GT7设置
 screen.Exposure=曝光
 screen.DepthOfField=景深
 screen.ChromaticDispersion=色散
@@ -105,7 +106,7 @@ option.PARALLAX_BASED_NORMAL.comment=开启视差后，存在视差深度时，�
 option.SMOOTH_NORMAL=平滑法线
 option.SMOOTH_NORMAL.comment=平滑化法线而非每个纹理像素一个固定值. 存在视差深度时会被基于视差的法线替代
 option.ENTITY_VERTEX_TBN=实体顶点TBN
-option.ENTITY_VERTEX_TBN.comment=在实体上使用顶点TBN而非片元着色器中求导的结果. 精度较低，但可在部分模组实体上呈现较平滑的法线
+option.ENTITY_VERTEX_TBN.comment=在实体上使用顶点TBN而非片元着色器中求导的结果. 精度较低，但可在部分模组实体上呈现较平滑的法线. 警告：部分实体的顶点TBN可能不正确
 # Parallax
 option.PARALLAX=视差
 option.SMOOTH_PARALLAX=平滑视差
@@ -386,6 +387,12 @@ option.POWER_B=中调：蓝色
 option.SAT_1=饱和度
 option.AGX_EV_MIN=AgX最小曝光度
 option.AGX_EV_MAX=AgX最大曝光度
+# GT7
+option.GT7_MID_POINT=GT7中点
+option.GT7_LINEAR_SECTION=GT7线性区域
+option.GT7_TOE_STRENGTH=GT7末端强度
+option.GT7_FADE_START=GT7渐变开始
+option.GT7_FADE_END=GT7渐变结束
 # Exposure
 option.EXPOSURE_VALUE=曝光量
 option.EXPOSURE_VALUE.comment=曝光量与实际亮度的关系为 `实际亮度 = 2 ^ 曝光量`

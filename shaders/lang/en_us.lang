@@ -35,6 +35,7 @@ screen.ToneMapping=Tone mapping
 screen.Uchimura=Uchimura settings
 screen.AgX=AgX settings
 screen.AgX_Pure=AgX tone
+screen.GT7=GT7 settings
 screen.Exposure=Exposure
 screen.DepthOfField=Depth of field
 screen.ChromaticDispersion=Chromatic dispersion
@@ -97,7 +98,7 @@ option.PARALLAX_BASED_NORMAL.comment=Using normal generated from parallax data b
 option.SMOOTH_NORMAL=Smooth normal
 option.SMOOTH_NORMAL.comment=Smoothes normal sampling. Will be overwritten with parallax based normal if that setting is on
 option.ENTITY_VERTEX_TBN=Entity vertex TBN
-option.ENTITY_VERTEX_TBN.comment=Using vertex TBN instead of fragment derivative on entities. Low precision, but can create smooth normals on some mod entities
+option.ENTITY_VERTEX_TBN.comment=Using vertex TBN instead of fragment derivative on entities. Low precision, but can create smooth normals on some mod entities. Warning: some entity have incorrect vertex TBN
 # Parallax
 option.PARALLAX=Parallax
 option.SMOOTH_PARALLAX=Smooth parallax
@@ -348,6 +349,12 @@ option.POWER_B=Power: Blue
 option.SAT_1=Saturation_1
 option.AGX_EV_MIN=AgX minimum EV
 option.AGX_EV_MAX=AgX maximum EV
+# GT7
+option.GT7_MID_POINT=GT7 mid point
+option.GT7_LINEAR_SECTION=GT7 linear section
+option.GT7_TOE_STRENGTH=GT7 toe strength
+option.GT7_FADE_START=GT7 fade start
+option.GT7_FADE_END=GT7 fade end
 # Exposure
 option.EXPOSURE_VALUE=EV
 option.AVERAGE_EXPOSURE_CENTER_WEIGHT=Average exposure center weight
