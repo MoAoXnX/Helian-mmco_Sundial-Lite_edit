@@ -233,7 +233,7 @@ void main() {
         vec3 vanillaLight = vec3(0.0);
         #ifdef SHADOW_AND_SKY
             vanillaLight +=
-                pow2(gbufferData.lightmap.y) * (skyColorUp + sunColor * SUNLIGHT_BRIGHTNESS) * (1.0 - gbufferData.metalness) * (ENVIROMENT_BRIGHTNESS - 0.4 * weatherStrength);
+                pow2(gbufferData.lightmap.y) * (skyColorUp + sunColor * SUNLIGHT_BRIGHTNESS) * (1.0 - gbufferData.metalness) * (ENVIROMENT_BRIGHTNESS - 0.6 * weatherStrength);
         #endif
         #ifdef IS_IRIS
             float eyeRelatedDistance = length(waterWorldPos + relativeEyePosition);
