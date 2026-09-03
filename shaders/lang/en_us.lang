@@ -52,6 +52,7 @@ profile.Space=Space (SkyBlock)
 profile.Vanilla=Vanilla MC
 screen.MODIFIED_SETTINGS=Modified settings
 screen.BASICLIGHT_WORLD0_OPTIONS=Basic light options (world0)
+screen.SkyColor=Sky Color
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter
@@ -178,6 +179,9 @@ option.BW0_R=Red
 option.BW0_G=Green
 option.BW0_B=Blue
 option.SKYBRIGHTNESS=Sky brightness
+option.SKYC_R=Sky color: red
+option.SKYC_G=Sky color: green
+option.SKYC_B=Sky color: blue
 option.ENVIROMENT_BRIGHTNESS=Enviroment brightness (Don't touch it)
 option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
 # LightColor

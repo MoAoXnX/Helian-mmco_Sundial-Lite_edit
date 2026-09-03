@@ -59,6 +59,7 @@ profile.Space=太空 (空岛)
 profile.Vanilla=原版MC
 screen.MODIFIED_SETTINGS=Modified选项汇总
 screen.BASICLIGHT_WORLD0_OPTIONS=基础亮度选项(world0)
+screen.SkyColor=天空颜色
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=各向异性过滤
@@ -189,6 +190,9 @@ option.BW0_R=红色强度
 option.BW0_G=绿色强度
 option.BW0_B=蓝色强度
 option.SKYBRIGHTNESS=天空亮度
+option.SKYC_R=天空颜色：红
+option.SKYC_G=天空颜色：绿
+option.SKYC_B=天空颜色：蓝
 option.ENVIROMENT_BRIGHTNESS=环境光亮度 (别动这个选项)
 option.SLSR_TEST1.comment=0.0防止远处阳光高光漏光. 1.0获得雨天明显高光.
 option.SUNLIGHTSPECULARROUGH=阳光反射粗糙度
