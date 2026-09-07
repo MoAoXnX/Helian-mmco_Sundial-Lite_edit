@@ -5,6 +5,7 @@ screen.Texture.comment=Texture resolution, normal, parallax and specular
 screen.PlantWave=Plant wave
 screen.Water=Water
 screen.Normal=Normal
+screen.DirectionalLightLevel=Directional light level
 screen.Parallax=Parallax
 screen.Specular=PBR
 screen.Reflection=Reflection
@@ -100,6 +101,11 @@ option.SMOOTH_NORMAL=Smooth normal
 option.SMOOTH_NORMAL.comment=Smoothes normal sampling. Will be overwritten with parallax based normal if that setting is on
 option.ENTITY_VERTEX_TBN=Entity vertex TBN
 option.ENTITY_VERTEX_TBN.comment=Using vertex TBN instead of fragment derivative on entities. Low precision, but can create smooth normals on some mod entities. Warning: some entity have incorrect vertex TBN
+# DirectionalLightLevel
+option.DIRECTIONAL_LIGHT_LEVEL=Directional light level
+option.DIRECTIONAL_LIGHT_LEVEL.comment=Let vanilla light level interact with texture normal. May looks strange on certain scene
+option.DIRECTIONAL_BLOCK_LIGHT_STRENGTH=Directional block light strength
+option.DIRECTIONAL_SKY_LIGHT_STRENGTH=Directional sky light strength
 # Parallax
 option.PARALLAX=Parallax
 option.SMOOTH_PARALLAX=Smooth parallax
@@ -114,6 +120,13 @@ option.PARALLAX_QUALITY=Parallax quality
 option.PARALLAX_QUALITY.comment=Improves parallax quality with more performance cost. Improves the "pane edge" effect
 option.PARALLAX_MAX_REFINEMENTS=Parallax fineness
 option.PARALLAX_MAX_REFINEMENTS.comment=Improves parallax quality with Less performance cost. Does not improve the "pane edge" effect
+option.SMOOTH_PARALLAX_OFFSET=Smooth parallax offset
+option.SMOOTH_PARALLAX_OFFSET.comment=Offset parallax to match the pixels with smooth parallax enabled. Applied on Parallax based normal too.
+value.SMOOTH_PARALLAX_OFFSET.0=Off
+value.SMOOTH_PARALLAX_OFFSET.1=Left lower
+value.SMOOTH_PARALLAX_OFFSET.2=Left upper
+value.SMOOTH_PARALLAX_OFFSET.3=Right lower
+value.SMOOTH_PARALLAX_OFFSET.4=Right upper
 # Specular
 option.SUBSERFACE_SCATTERING_STRENTGH=Sub-surface scattering strength
 option.PBR_BRIGHTNESS=PBR brightness
