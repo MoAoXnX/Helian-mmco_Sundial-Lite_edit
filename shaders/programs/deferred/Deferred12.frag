@@ -27,7 +27,7 @@ in vec2 texcoord;
     const vec3 skyColorUp = vec3(0.0);
 #endif
 
-#define VB_TRACE_COUNT 1 // [0 1 2 3 4 5 6 7 8]
+#define VB_TRACE_COUNT 1 // [1 2 3 4 5 6 7 8]
 #define VB_STEPS 16 // [4 6 8 12 16 20 24 32 40 48 64 80 96 112 128]
 #define VB_GI_LENGTH 514.0 // [64.0 80.0 96.0 114.0 128.0 160.0 192.0 224.0 256.0 320.0 384.0 448.0 514.0 640.0 768.0 896.0 1024.0 1280.0 1536.0 1792.0 2048.0]
 #define VB_AO_LENGTH 128.0 // [64.0 80.0 96.0 114.0 128.0 160.0 192.0 224.0 256.0 320.0 384.0 448.0 514.0 640.0 768.0 896.0 1024.0 1280.0 1536.0 1792.0 2048.0]
@@ -395,6 +395,13 @@ void main() {
             vec3 worldPos = viewToWorldPos(viewPos);
             float eyeRelatedDistance = length(worldPos + relativeEyePosition);
             gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
+            #ifdef DIRECTIONAL_LIGHT_LEVEL
+                vec3 viewOffset = worldToViewPos(worldPos + relativeEyePosition);
+                float normalAngle = (dot(viewOffset, gbufferData.geoNormal) - dot(viewOffset, gbufferData.normal)) * inversesqrt(dot(viewOffset, viewOffset));
+                normalAngle = signMul(sqrt(abs(normalAngle)), normalAngle);
+                gbufferData.lightmap.x += normalAngle * DIRECTIONAL_BLOCK_LIGHT_STRENGTH * (gbufferData.lightmap.x - gbufferData.lightmap.x * gbufferData.lightmap.x);
+                gbufferData.lightmap.x = clamp(gbufferData.lightmap.x, 0.0, 1.0);
+            #endif
         #endif
 
         viewPos += gbufferData.geoNormal * 3e-3;
