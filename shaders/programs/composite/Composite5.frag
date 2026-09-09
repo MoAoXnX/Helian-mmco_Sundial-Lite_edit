@@ -336,7 +336,7 @@ void main() {
                 }
                 else {
                     #ifdef SHADOW_AND_SKY
-                        float timeStrength = pow(clamp(1.0 - shadowDirection.y, 0.0, 1.0), 5.0);
+                        float timeStrength = pow(clamp(1.0 - shadowDirection.y, 0.0, 1.0), 10.0);
                         float timeVLStrength = (timeStrength * (MORNING_VL_STRENGTH - NOON_VL_STRENGTH) + NOON_VL_STRENGTH);
                         float heightDensity = clamp(exp(-(cameraPosition.y + WORLD_BASIC_HEIGHT) / 1200.0), 0.0, 1.0);
                         basicWeight *= timeVLStrength * heightDensity;
