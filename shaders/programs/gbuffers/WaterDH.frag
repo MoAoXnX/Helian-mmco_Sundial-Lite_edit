@@ -44,6 +44,13 @@ void main() {
     GbufferData rawData;
 
     rawData.albedo = color;
+    #ifdef DISTANT_HORIZONS_TEXTURES
+        if (dh_hasTexture()) {
+            rawData.albedo = dh_sampleTexture();
+            vec3 clampedColor = clamp(color.rgb * (rawData.albedo.rgb * 2.0), 0.0, 1.0);
+            rawData.albedo.rgb = mix(color.rgb, clampedColor, rawData.albedo.a);
+        }
+    #endif
     rawData.lightmap = blockLight;
     rawData.geoNormal = tbnMatrix[2];
     rawData.smoothness = clamp(1.0 + materialID, 0.0, 1.0);
@@ -81,6 +88,7 @@ void main() {
     #endif
     #if WATER_TYPE == 0
         if (materialID == MAT_WATER) {
+            rawData.albedo = color;
             vec3 tangentDir = transpose(tbnMatrix) * viewPos.xyz;
             normal = waterWave(mcPos / 32.0, tangentDir);
             normal.xy += rippleNormal.xy * wetStrength;
