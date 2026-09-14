@@ -71,12 +71,6 @@ vec3 sampleBloom(vec2 coord, float level, vec2 minRange, vec2 maxRange) {
     vec2 maxTexel = maxRange * texelSize - 0.5 * texelSize;
     vec2 minTexel = minRange * texelSize + 0.5 * texelSize;
 
-    minTexel.x += texelSize.x * 2.0;
-    minTexel.y += texelSize.y * 1.0;
-
-    maxTexel.x -= texelSize.x * 2.0;
-    maxTexel.y -= texelSize.y * 1.0;
-
     centerCoord = clamp(centerCoord, minTexel, maxTexel);
 
     vec3 bloomColor = textureLod(colortex4, centerCoord, 0.0).rgb;
