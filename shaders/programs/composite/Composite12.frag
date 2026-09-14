@@ -29,8 +29,8 @@ vec3 sampleBloomY(vec2 coord) {
         discard;
     }
     ivec2 texel = ivec2(coord * screenSize);
-    int maxTexelY = int(floor(screenSize.y * (1.0 - offset.y)));
-    int minTexelY = int(ceil(screenSize.y * (1.0 - 2.0 * offset.y)));
+    int maxTexelY = int(round(screenSize.y * (1.0 - offset.y))) - 1;
+    int minTexelY = int(round(screenSize.y * (1.0 - 2.0 * offset.y)));
 
     const float weights[5] = float[5](0.27343750, 0.21875000, 0.10937500, 0.03125000, 0.00390625);
     vec3 totalColor = texelFetch(colortex4, texel, 0).rgb * weights[0];
