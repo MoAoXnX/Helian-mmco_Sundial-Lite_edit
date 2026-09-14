@@ -44,6 +44,13 @@ void main() {
     ivec2 texel = (pixelPos.xz + 17 * pixelPos.y) & 63;
     float noise = texelFetch(noisetex, texel, 0).r;
     albedo.rgb = pow(albedo.rgb, vec3(noise * 0.3 + 0.85));
+    #ifdef DISTANT_HORIZONS_TEXTURES
+        if (dh_hasTexture()) {
+            albedo = dh_sampleTexture();
+            vec3 clampedColor = clamp(color.rgb * (albedo.rgb * 2.0), 0.0, 1.0);
+            albedo.rgb = mix(color.rgb, clampedColor, albedo.a);
+        }
+    #endif
 
     vec3 dPosDX = dFdx(viewPos);
     vec3 dPosDY = dFdy(viewPos);
