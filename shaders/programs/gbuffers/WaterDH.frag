@@ -44,6 +44,13 @@ void main() {
     GbufferData rawData;
 
     rawData.albedo = color;
+    #ifdef DISTANT_HORIZONS_TEXTURES
+        if (dh_hasTexture()) {
+            rawData.albedo = dh_sampleTexture();
+            vec3 clampedColor = clamp(color.rgb * (rawData.albedo.rgb * 2.0), 0.0, 1.0);
+            rawData.albedo.rgb = mix(color.rgb, clampedColor, rawData.albedo.a);
+        }
+    #endif
     rawData.lightmap = blockLight;
     rawData.geoNormal = tbnMatrix[2];
     rawData.smoothness = clamp(1.0 + materialID, 0.0, 1.0);
