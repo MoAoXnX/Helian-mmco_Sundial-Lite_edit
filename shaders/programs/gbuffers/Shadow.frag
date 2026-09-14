@@ -29,8 +29,6 @@ in float distortFixValue;
 #include "/libs/Uniform.glsl"
 #include "/libs/Common.glsl"
 
-uniform sampler2D gaux1;
-
 const int shadowMapResolution = 2048; // [1024 2048 4096 8192 16384]
 const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
 
