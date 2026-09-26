@@ -49,7 +49,7 @@ const vec4 colortex4ClearColor = vec4(0.0, 0.0, 0.0, 0.6);
 
 const int noiseTextureResolution = 64;
 
-const float sunPathRotation = -40.0; // [-90.0 -89.0 -85.0 -80.0 -75.0 -70.0 -65.0 -60.0 -55.0 -50.0 -45.0 -40.0 -35.0 -30.0 -25.0 -20.0 -15.0 -10.0 -5.0 0.0 5.0 10.0 15.0 20.0 25.0 30.0 35.0 40.0 45.0 50.0 55.0 60.0 65.0 70.0 75.0 80.0 85.0 90.0]
+const float sunPathRotation = -40.0; // [-90.0 -89.0 -85.0 -80.0 -75.0 -70.0 -65.0 -60.0 -55.0 -50.0 -45.0 -40.0 -35.0 -30.0 -25.0 -20.0 -15.0 -10.0 -5.0 0.0 5.0 10.0 15.0 20.0 25.0 30.0 35.0 40.0 45.0 50.0 55.0 60.0 65.0 70.0 75.0 80.0 85.0 89.0 90.0]
 const float ambientOcclusionLevel = 0.0;
 
 const float wetnessHalflife = 100.0;
@@ -65,17 +65,22 @@ void main() {
     if (offset.x != offset.y) {
         discard;
     }
+    ivec2 maxTexel = ivec2(round(screenSize * (1.0 - offset.y))) - 1;
+    ivec2 minTexel = ivec2(round(screenSize * (1.0 - 2.0 * offset.y)));
+    ivec2 offset00 = max(texel - 1, minTexel) - texel;
+    ivec2 offset11 = min(texel + 1, maxTexel) - texel;
+
     vec3 bloomColor = vec3(0.0);
     bloomColor += texelFetch(colortex4, texel, 0).rgb;
-    bloomColor += texelFetch(colortex4, texel + ivec2(-1,  0), 0).rgb;
-    bloomColor += texelFetch(colortex4, texel + ivec2( 0, -1), 0).rgb;
-    bloomColor += texelFetch(colortex4, texel + ivec2(-1,  0), 0).rgb;
-    bloomColor += texelFetch(colortex4, texel + ivec2( 0, -1), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(offset00.x, 0         ), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(0         , offset00.y), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(offset11.x, 0         ), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(0         , offset11.y), 0).rgb;
     bloomColor *= 4.0;
-    bloomColor += texelFetch(colortex4, texel + ivec2( 1,  1), 0).rgb;
-    bloomColor += texelFetch(colortex4, texel + ivec2( 1, -1), 0).rgb;
-    bloomColor += texelFetch(colortex4, texel + ivec2(-1,  1), 0).rgb;
-    bloomColor += texelFetch(colortex4, texel + ivec2(-1, -1), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(offset11.x, offset11.y), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(offset11.x, offset00.y), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(offset00.x, offset11.y), 0).rgb;
+    bloomColor += texelFetch(colortex4, texel + ivec2(offset00.x, offset00.y), 0).rgb;
     bloomColor /= 24.0;
 
     texBuffer4 = vec4(bloomColor, 1.0);

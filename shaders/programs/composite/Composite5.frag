@@ -207,7 +207,7 @@ void main() {
                 solidColor.rgb = netherFogTotal(solidColor.rgb, waterDistance);
             #elif defined THE_END
                 solidColor.rgb = endFogTotal(solidColor.rgb, waterDistance);
-                if (solidDepth> 0.999999)
+                if (solidDepth > 0.999999)
                     solidColor.rgb += endStars(worldDir);
             #else
                 float atmosphereDepth = mix(waterDistance * (1.0 + RF_GROUND_EXTRA_DENSITY * 3.0 * weatherStrength), 1600.0, step(0.999999, solidDepth));

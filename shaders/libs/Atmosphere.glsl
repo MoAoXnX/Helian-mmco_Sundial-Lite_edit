@@ -1,5 +1,5 @@
 const vec3 ozoneAbsorption = vec3(4e-6, 6e-6, 0.2e-6);
-const vec3 pureRayleighBeta = vec3(4.2e-6, 10.1e-6, 29.6e-6);
+const vec3 pureRayleighBeta = vec3(SKYC_R / 1000000.0, SKYC_G / 1000000.0, SKYC_B / 1000000.0);
 const vec3 rayleighBeta = pureRayleighBeta + ozoneAbsorption;
 const float mieBeta = 2.1e-5;
 const vec3 totalBeta = rayleighBeta + mieBeta;
