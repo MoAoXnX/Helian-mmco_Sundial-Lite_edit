@@ -244,6 +244,26 @@ vec3 renderSun(vec3 rayDir, vec3 lightDir, vec3 sunLight) {
     return sun;
 }
 
+vec3 endFlashDisc(vec3 rayDir, vec3 lightDir, vec3 sunLight) {
+    //http://www.physics.hmc.edu/faculty/esin/a101/limbdarkening.pdf
+    float cosAngle = clamp(dot(rayDir, lightDir), 0.0, 1.0);
+    const vec3 u = vec3(1.0, 1.0, 1.0);
+    const vec3 a = vec3(0.397, 0.503, 0.652);
+    float theta = acos(cosAngle);
+    float radius = sunRadius * sqrt(endFlashIntensity);
+    float centerToEdge = (theta / radius);
+
+    vec3 sun = vec3(0.0);
+    if (theta < radius) {
+        vec3 light = sunLight;
+        float mu = 1.0 - centerToEdge * centerToEdge;
+        vec3 factor = vec3(1.0) - u * (vec3(1.0) - pow(vec3(mu), a * 0.5));
+
+        sun = endFlashIntensity * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B) * light * factor;
+    }
+    return sun;
+}
+
 float blindnessFactor = max(darknessFactor * 0.5, blindness);
 vec3 waterAbsorptionBeta = vec3(WATER_ABSORPTION_R, WATER_ABSORPTION_G, WATER_ABSORPTION_B) + blindnessFactor;
 vec3 waterScattering = vec3(WATER_SCATTERING_R, WATER_SCATTERING_G, WATER_SCATTERING_B);

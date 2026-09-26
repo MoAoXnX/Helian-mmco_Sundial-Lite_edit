@@ -355,11 +355,13 @@ void main() {
             #endif
             shadow += subsurfaceScattering;
             finalColor.rgb += shadow;
-        }
-        else {
+        #endif
+    }
+    else {
+        #ifdef SHADOW_AND_SKY
             vec3 worldDir = normalize(worldPos);
             finalColor.rgb = renderSun(worldDir, sunDirection, vec3(300.0)) + gbufferData.albedo.rgb * 2.0;
-    #endif
+        #endif
     }
 
     texBuffer3 = finalColor;

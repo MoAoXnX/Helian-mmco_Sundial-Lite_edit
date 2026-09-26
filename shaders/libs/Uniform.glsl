@@ -14,6 +14,7 @@ uniform float rainyStrength;
 uniform float darknessFactor;
 uniform float weatherStrength;
 uniform float frameTimeCounter;
+uniform float endFlashIntensity;
 uniform ivec2 atlasSize;
 uniform ivec2 eyeBrightnessSmooth;
 uniform vec2 texelSize;
@@ -30,8 +31,6 @@ uniform vec3 shadowModelViewProj1;
 uniform vec3 shadowModelViewProj2;
 uniform vec3 shadowModelViewProj3;
 uniform vec4 spriteBounds;
-
-uniform float endFlashIntensity;
 
 uniform sampler2D gtexture;
 uniform sampler2D normals;

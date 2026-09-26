@@ -207,8 +207,12 @@ void main() {
                 solidColor.rgb = netherFogTotal(solidColor.rgb, waterDistance);
             #elif defined THE_END
                 solidColor.rgb = endFogTotal(solidColor.rgb, waterDistance);
-                if (solidDepth> 0.999999)
+                if (solidDepth > 0.999999) {
                     solidColor.rgb += endStars(worldDir);
+                    #ifdef END_FLASH
+                        solidColor.rgb += endFlashDisc(worldDir, shadowDirection, vec3(300.0));
+                    #endif
+                }
             #else
                 #if defined ATMOSPHERE_SCATTERING_FOG && defined SHADOW_AND_SKY
                     float isSky = step(0.999999, solidDepth);
@@ -295,6 +299,9 @@ void main() {
             solidColor.rgb += endFogScattering(waterViewDepth);
             if (waterDepth > 0.999999) {
                 solidColor.rgb += endStars(waterWorldDir);
+                #ifdef END_FLASH
+                    solidColor.rgb += endFlashDisc(waterWorldDir, shadowDirection, vec3(300.0));
+                #endif
             }
         #else
             #ifdef SHADOW_AND_SKY

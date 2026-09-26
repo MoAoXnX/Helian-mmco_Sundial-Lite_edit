@@ -264,7 +264,18 @@ vec4 reflection(GbufferData gbufferData, float depth, vec3 f0, vec3 f82, float f
                 #endif
                 reflectionColor.rgb = mix(reflectionColor.rgb, planeCloud.rgb, planeCloud.a);
                 #ifdef LIGHT_LEAKING_FIX
-                    reflectionColor.rgb *= gbufferData.lightmap.y;
+                    float skyLightLevelFix = gbufferData.lightmap.y;
+                    vec3 viewDir = mat3(gbufferModelView) * rayDir;
+                    vec2 screenDir = viewDir.xy * vec2(gbufferProjection[0].x, gbufferProjection[1].y) / -viewDir.z;
+                    if (all(lessThan(abs(screenDir), vec2(1.0))) && viewDir.z < 0.0) {
+                        vec2 targetCoord = screenDir * 0.5 + 0.5;
+                        float targetDepth = textureLod(depthtex1, targetCoord, 0.0).x;
+                        #ifdef LOD
+                            targetDepth = max(targetDepth, getLodDepthSolid(targetCoord));
+                        #endif
+                        skyLightLevelFix = clamp(skyLightLevelFix + float(targetDepth == 1.0), 0.0, 1.0);
+                    }
+                    reflectionColor.rgb *= skyLightLevelFix;
                 #endif
             #endif
             reflectionColor.w = 114514.0;
@@ -279,6 +290,7 @@ vec4 reflection(GbufferData gbufferData, float depth, vec3 f0, vec3 f82, float f
                     reflectionColor.rgb +=
                         SUNLIGHT_BRIGHTNESS * endFlashIntensity * PI * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B) * miePhase(dot(rayDir, shadowDirection), 0.6, 0.36) *
                         (1.0 - exp(-reflectionColor.w * (blindnessFactor + 0.003))) * 0.003 / (blindnessFactor + 0.003);
+                    reflectionColor.rgb += endFlashDisc(rayDir, shadowDirection, vec3(300.0)) * float(hitSky) * clamp(gbufferData.smoothness * 20.0 - 18.0, 0.0, 1.0);
                 #endif
             #elif defined NETHER
                 reflectionColor.rgb = netherFogTotal(reflectionColor.rgb, reflectionColor.w);

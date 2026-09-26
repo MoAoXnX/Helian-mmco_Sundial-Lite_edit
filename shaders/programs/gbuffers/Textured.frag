@@ -379,6 +379,12 @@ void main() {
                 rawData.normal = viewDir * weight + edgeNormal * max(0.0, inversesqrt(dot(edgeNormal, edgeNormal) / (1.0 - weight * weight)));
             }
         }
+        #ifdef IRIS_INLINE_GLINT
+            if (mc_hasGlint()) {
+                vec3 glint = mc_sampleGlint();
+                rawData.albedo.rgb += glint * glint; // this is the specific blending glint uses
+            }
+        #endif
     }
 
     packUpGbufferDataSolid(rawData, gbufferData0, gbufferData1, gbufferData2);
