@@ -240,8 +240,8 @@ void main() {
         #ifdef SHADOW_AND_SKY
             vanillaLight +=
                 pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75) *
-                (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.3)) *
-                (1.0 - gbufferData.metalness) * (ENVIROMENT_BRIGHTNESS - 0.75 * weatherStrength);
+                (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
+                (1.0 - gbufferData.metalness) * (1.0 - 0.75 * weatherStrength);
         #endif
         #ifdef IS_IRIS
             float eyeRelatedDistance = length(waterWorldPos + relativeEyePosition);
@@ -379,8 +379,8 @@ void main() {
                 }
                 vec3 stepAbsorption = exp2(absorptionBeta);
                 vec3 skyScattering =
-                    (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.3)) *
-                    (ENVIROMENT_BRIGHTNESS - 0.75 * weatherStrength) * eyeBrightnessSmooth.y / 1000.0;
+                    (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
+                    (1.0 - 0.75 * weatherStrength) * eyeBrightnessSmooth.y / 1000.0;
                 stepLength *= -0.01 * 1.44269502 / max(1e-5, basicWeight);
 
                 for (int i = 0; i < VL_SAMPLES; i++) {
@@ -441,7 +441,7 @@ void main() {
         if (weatherLightData > 0.3) {
             float sunlightStrength = 2.0 * weatherLightData - 1.0;
             float basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
-            vec3 weatherLight = sunlightStrength * basicSunlight * sunColor + skyColorUp * (ENVIROMENT_BRIGHTNESS - 0.75 * weatherStrength);
+            vec3 weatherLight = sunlightStrength * basicSunlight * sunColor + skyColorUp * (1.0 - 0.75 * weatherStrength);
             float weatherBlendWeight = clamp(weatherData * 1e+10, 0.0, 1.0) * 0.8 + 0.2;
             solidColor.rgb = mix(solidColor.rgb, weatherLight, weatherBlendWeight);
         }

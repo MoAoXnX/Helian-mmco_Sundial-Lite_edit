@@ -195,7 +195,7 @@ option.SKYBRIGHTNESS=Sky brightness
 option.SKYC_R=Sky color: red
 option.SKYC_G=Sky color: green
 option.SKYC_B=Sky color: blue
-option.ENVIROMENT_BRIGHTNESS=Enviroment brightness (Don't touch it)
+option.ENVIROMENT_DARKNESS=Enviroment darkness
 option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
 # LightColor
 option.LIGHT_BRIGHTNESS=Light brightness

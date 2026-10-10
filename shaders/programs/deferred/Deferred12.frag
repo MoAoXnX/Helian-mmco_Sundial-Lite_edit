@@ -432,8 +432,8 @@ void main() {
         #ifdef SHADOW_AND_SKY
             lightColor +=
                 skyLightStrength *
-                (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (ENVIROMENT_BRIGHTNESS - 0.3)) *
-                (ENVIROMENT_BRIGHTNESS - 0.75 * weatherStrength);
+                (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
+                (1.0 - 0.75 * weatherStrength);
         #endif
         lightColor *= (1.0 - currData.w * (1.0 - 0.15 * blendWeight));
         #ifdef VBGI
