@@ -2,7 +2,7 @@ const vec3 ozoneAbsorption = vec3(4e-6, 6e-6, 0.2e-6);
 const vec3 pureRayleighBeta = vec3(SKYC_R / 1000000.0, SKYC_G / 1000000.0, SKYC_B / 1000000.0);
 const vec3 rayleighBeta = pureRayleighBeta + ozoneAbsorption;
 const float mieBeta = 2.1e-5;
-const float rayLeighScaledHeight = 12500.0;
+const float rayLeighScaledHeight = 10500.0;
 const float mieScaledHeight = 1200.0;
 const vec2 scaledHeight = vec2(rayLeighScaledHeight, mieScaledHeight);
 const float mieG = 0.76;
@@ -180,10 +180,10 @@ vec3 atmosphereScatteringUp(float lightHeight, float sunLightStrength) {
 
             vec2 relativeDensity = exp2(earthScaledHeight - middleHeight / scaledHeight * 1.44269502);
             currInScattering =
-                relativeDensity.x * rayleighBeta * (currSunInScattering * sunRayleigh + currMoonInScattering * moonRayleigh) + 
+                relativeDensity.x * pureRayleighBeta * (currSunInScattering * sunRayleigh + currMoonInScattering * moonRayleigh) + 
                 relativeDensity.y * mieBeta * (currSunInScattering * sunMie + currMoonInScattering * moonMie);
 
-            vec3 stepAbsorptionBeta = relativeDensity.x * pureRayleighBeta + relativeDensity.y * rainyMieBeta;
+            vec3 stepAbsorptionBeta = relativeDensity.x * rayleighBeta + relativeDensity.y * rainyMieBeta;
             vec3 stepOpticalDepth = stepAbsorptionBeta * stepLength;
             vec3 stepTransmittance = exp(-stepOpticalDepth);
 
