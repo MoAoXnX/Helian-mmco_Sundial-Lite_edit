@@ -112,7 +112,7 @@ vec4 blockyCloud(vec3 baseColor, vec3 atmosphere, vec3 worldPos, vec3 worldDir, 
 }
 
 vec2 raySphereIntersection(float RdotP, float RdotP2, float R2) {
-    float d = sqrt(RdotP2 - R2);
+    float d = sqrt(RdotP2 + R2);
     vec2 result = max(vec2(-1.0), vec2(-RdotP - d, -RdotP + d));
     return result;
 }
@@ -230,8 +230,8 @@ vec4 realisticCloud(
     intersectionData.x = dot(cloudPos, worldDir);
     intersectionData.y = intersectionData.x * intersectionData.x - dot(cloudPos, cloudPos);
     float planetIntersection = intersectionData.z;
-    vec2 cloudBottomIntersection = raySphereIntersection(intersectionData.x, intersectionData.y, -pow2(cloudBottomHeight));
-    vec2 cloudTopIntersection = raySphereIntersection(intersectionData.x, intersectionData.y, -pow2(cloudTopHeight));
+    vec2 cloudBottomIntersection = raySphereIntersection(intersectionData.x, intersectionData.y, pow2(cloudBottomHeight));
+    vec2 cloudTopIntersection = raySphereIntersection(intersectionData.x, intersectionData.y, pow2(cloudTopHeight));
 
     float startIntersection, endIntersection;
     bool hit = true;
@@ -241,10 +241,9 @@ vec4 realisticCloud(
         endIntersection = cloudTopIntersection.y;
     }
     else {
-        endIntersection = mix(cloudTopIntersection.y, cloudBottomIntersection.x, float(cloudBottomIntersection.x > 0.0));
-        float overCloud = clamp((cloudPos.y - cloudTopHeight) * 1e+10, 0.0, 1.0);
-        startIntersection = cloudTopIntersection.x * overCloud;
-        hit = cloudPos.y < cloudTopHeight || cloudTopIntersection.y > 0.0;
+        hit = cloudTopIntersection.y > 0.0;
+        startIntersection = max(0.0, cloudTopIntersection.x);
+        endIntersection = uintBitsToFloat(min(floatBitsToUint(cloudTopIntersection.y), floatBitsToUint(cloudBottomIntersection.x)));
     }
 
     if (backDepth > 1e-5) {
