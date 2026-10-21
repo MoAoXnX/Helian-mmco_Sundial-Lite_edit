@@ -63,6 +63,7 @@ profile.NightVision=夜视
 screen.MODIFIED_SETTINGS=Modified选项汇总
 screen.BASICLIGHT_WORLD0_OPTIONS=基础亮度选项(world0)
 screen.SkyColor=天空颜色
+screen.REALISTICCLOUDQUALITY_IN_REF=反射中质量
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=各向异性过滤
@@ -340,6 +341,10 @@ option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES=体积云阴影光照采样数
 option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES.comment=日光与月光的光照采样数
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES=体积云阴影光照噪声层数
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES.comment=计算体积云的阴影光照时对云进行采样时所用的噪声层数
+option.CLOUD_REALISTIC_HQ_SAMPLES_REFLECTION=反射中体积云采样数
+option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES_REFLECTION=反射中体积云阴影光照采样数
+option.CLOUD_REALISTIC_OCTAVES_REFLECTION=反射中体积云噪声层数
+option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES_REFLECTION=反射中体积云阴影光照噪声层数
 # RealisticCloudShape
 option.CLOUD_REALISTIC_OCTAVES=体积云噪声层数
 option.CLOUD_REALISTIC_OCTAVES.comment=噪声层数越多体积云细节越多. 影响性能

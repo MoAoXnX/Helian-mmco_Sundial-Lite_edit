@@ -55,6 +55,7 @@ profile.NightVision=Night Vision
 screen.MODIFIED_SETTINGS=Modified settings
 screen.BASICLIGHT_WORLD0_OPTIONS=Basic light options (world0)
 screen.SkyColor=Sky Color
+screen.REALISTICCLOUDQUALITY_IN_REF=Quality in reflection
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter
@@ -307,6 +308,10 @@ option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES=Realistic cloud shadow light samples
 option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES.comment=Samples of sunlight and moonlight
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES=Realistic cloud shadow light octaves
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES.comment=Noise octaves when sampling shadow light for cloud
+option.CLOUD_REALISTIC_HQ_SAMPLES_REFLECTION=Realistic cloud samples in reflection
+option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES_REFLECTION=Realistic cloud shadow light samples in reflection
+option.CLOUD_REALISTIC_OCTAVES_REFLECTION=Realistic cloud noise octaves in reflection
+option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES_REFLECTION=Realistic cloud shadow light octaves in reflection
 # RealisticCloudShape
 option.CLOUD_REALISTIC_OCTAVES=Realistic cloud noise octaves
 option.CLOUD_REALISTIC_OCTAVES.comment=More layer means more detailed cloud, with performance cost
