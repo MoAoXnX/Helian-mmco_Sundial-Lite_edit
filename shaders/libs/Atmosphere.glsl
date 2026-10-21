@@ -11,13 +11,18 @@ const float mieG2 = mieG * mieG;
 
 const float earthRadius = 6371000.0;
 const float atmosphereHeight = earthRadius + 100000.0;
+const float atmosphereThickness = 100000.0;
 const float sunRadius = 0.02;
 const vec2 earthScaledHeight = 1.44269502 * earthRadius / scaledHeight;
 
 vec4 planetIntersectionData(vec3 worldPos, vec3 worldDir) {
     worldPos.y += max(300.0 + earthRadius, cameraPosition.y + WORLD_BASIC_HEIGHT + earthRadius);
+    vec3 sampleDirection = worldDir;
+    float horizonFactor = clamp((worldPos.y - earthRadius) / atmosphereThickness * 3.0, 0.0, 1.0);
+    sampleDirection.y *= clamp(float(sampleDirection.y > 0.0) + 2.0 * horizonFactor - horizonFactor * horizonFactor, 0.0, 1.0);
+    sampleDirection = normalize(sampleDirection);
     float R2 = dot(worldPos, worldPos);
-    float RdotP = dot(worldPos, worldDir);
+    float RdotP = dot(worldPos, sampleDirection);
     float RdotP2 = RdotP * RdotP - R2;
     float d = sqrt(RdotP2 + earthRadius * earthRadius);
     float rayHeight = sqrt(R2 + RdotP * abs(RdotP));
@@ -93,6 +98,11 @@ vec3 singleAtmosphereScattering(vec3 skyLightColor, vec3 worldPos, vec3 worldDir
         float d = deltaAtmos * inversesqrt(deltaAtmos);
         float atmosphereLength = -b + d;
         if (atmosphereLength > 0.0) {
+            vec3 sampleDirection = worldDir;
+            float horizonFactor = clamp((originPos.y - earthRadius) / atmosphereThickness * 3.0, 0.0, 1.0);
+            sampleDirection.y *= clamp(float(sampleDirection.y > 0.0) + 2.0 * horizonFactor - horizonFactor * horizonFactor, 0.0, 1.0);
+            sampleDirection = normalize(sampleDirection);
+
             float groundLength = intersectionData.z;
             float hitSky = clamp(-1e+10 * groundLength, 0.0, 1.0);
             float originHeight2 = dot(originPos, originPos);
@@ -138,7 +148,7 @@ vec3 singleAtmosphereScattering(vec3 skyLightColor, vec3 worldPos, vec3 worldDir
 
             for (int i = 0; i < ATMOSPHERE_VIEW_SAMPLE; i++) {
                 stepLength += stepUnit;
-                samplePosition += worldDir * stepLength;
+                samplePosition += sampleDirection * stepLength;
                 float sampleHeight2 = dot(samplePosition, samplePosition);
 
                 float sampleHeightInv = inversesqrt(sampleHeight2);
