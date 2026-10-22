@@ -318,6 +318,8 @@ option.CLOUD_REALISTIC_HQ_SAMPLES_REFLECTION=Realistic cloud samples in reflecti
 option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES_REFLECTION=Realistic cloud shadow light samples in reflection
 option.CLOUD_REALISTIC_OCTAVES_REFLECTION=Realistic cloud noise octaves in reflection
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES_REFLECTION=Realistic cloud shadow light octaves in reflection
+option.CLOUD_REALISTIC_MIE_STRENGTH=Realistic cloud Mie strength
+option.CLOUD_REALISTIC_MIE_G=Realistic cloud MieG
 # RealisticCloudShape
 option.CLOUD_REALISTIC_OCTAVES=Realistic cloud noise octaves
 option.CLOUD_REALISTIC_OCTAVES.comment=More layer means more detailed cloud, with performance cost
