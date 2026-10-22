@@ -64,6 +64,7 @@ screen.MODIFIED_SETTINGS=Modified选项汇总
 screen.BASICLIGHT_WORLD0_OPTIONS=基础亮度选项(world0)
 screen.SkyColor=天空颜色
 screen.REALISTICCLOUDQUALITY_IN_REF=反射中质量
+screen.SUNGLINT=阳光高光
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=各向异性过滤
@@ -211,7 +212,12 @@ option.SKYC_G=天空颜色：绿
 option.SKYC_B=天空颜色：蓝
 option.ENVIROMENT_DARKNESS=环境光暗度
 option.SLSR_TEST1.comment=0.0防止远处阳光高光漏光. 1.0获得雨天明显高光.
-option.SUNLIGHTSPECULARROUGH=阳光反射粗糙度
+option.SUN_SPECULAR_ROUGH=阳光高光粗糙度
+option.GROUND_SUN_GLINT_STRENGTH=地面阳光高光强度
+option.GROUND_SUN_GLINT_SMOOTHNESS=地面阳光高光光滑度
+option.GROUND_SUN_GLINT=地面阳光高光
+value.GROUND_SUN_GLINT.0=关
+value.GROUND_SUN_GLINT.1=开
 # LightColor
 option.LIGHT_BRIGHTNESS=光源亮度
 option.LIGHT_COLOR_R=光源颜色：红

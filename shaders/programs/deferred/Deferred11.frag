@@ -338,6 +338,16 @@ void main() {
             vec3 shadowSpecular =
                 sunlightSpecular(viewDir, viewShadowDirection, gbufferData.normal, gbufferData.smoothness * 0.995, NdotL, NdotV, f0, f82) *
                 airAbsorption(11.4 * gbufferData.smoothness) * clamp((19.0 + SLSR_TEST1) - gbufferData.smoothness * (20.0 - SLSR_TEST1), 0.0, 1.0);
+            vec3 groundSunGlint = vec3(0.0);
+            #if GROUND_SUN_GLINT == 1
+                if (gbufferData.materialID == MAT_GRASS || gbufferData.materialID == MAT_DEFAULT) {
+                    groundSunGlint = sunlightSpecular(
+                        viewDir, viewShadowDirection, gbufferData.geoNormal,
+                        GROUND_SUN_GLINT_SMOOTHNESS,
+                        NdotL, NdotV, vec3(0.0), vec3(1.0)
+                    ) * GROUND_SUN_GLINT_STRENGTH;
+                }
+            #endif
             vec2 noise = blueNoiseTemporal(texcoord).xy;
             #ifdef SCREEN_SPACE_SHADOW
                 shadow *= screenSpaceShadow(viewPos, dot(worldGeoNormal, shadowDirection), viewLength, gbufferData.porosity, noise, float(depthWithParallax > 1.0));
@@ -348,7 +358,7 @@ void main() {
                 #endif
             #endif
             vec3 subsurfaceScattering = vec3(float(gbufferData.porosity > 64.5 / 255.0)) * shadow * shadowDiffuse;
-            shadow *= shadowDiffuse + shadowSpecular;
+            shadow *= shadowDiffuse + shadowSpecular + groundSunGlint;
             #ifdef PCSS
                 percentageCloserSoftShadow(
                     worldPos, worldGeoNormal, NdotL, 1.0 / viewLength, gbufferData.smoothness,

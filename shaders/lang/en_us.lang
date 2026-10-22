@@ -56,6 +56,7 @@ screen.MODIFIED_SETTINGS=Modified settings
 screen.BASICLIGHT_WORLD0_OPTIONS=Basic light options (world0)
 screen.SkyColor=Sky Color
 screen.REALISTICCLOUDQUALITY_IN_REF=Quality in reflection
+screen.SUNGLINT=Sun glint
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter
@@ -198,7 +199,12 @@ option.SKYC_R=Sky color: red
 option.SKYC_G=Sky color: green
 option.SKYC_B=Sky color: blue
 option.ENVIROMENT_DARKNESS=Enviroment darkness
-option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
+option.SUN_SPECULAR_ROUGH=Sun specular roughness
+option.GROUND_SUN_GLINT_STRENGTH=Ground sun glint strength
+option.GROUND_SUN_GLINT_SMOOTHNESS=Ground sun glint smoothness
+option.GROUND_SUN_GLINT=Ground sun glint
+value.GROUND_SUN_GLINT.0=Off
+value.GROUND_SUN_GLINT.1=On
 # LightColor
 option.LIGHT_BRIGHTNESS=Light brightness
 option.LIGHT_COLOR_R=Light color: red
