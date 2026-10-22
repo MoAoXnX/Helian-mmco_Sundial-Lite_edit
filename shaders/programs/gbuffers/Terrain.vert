@@ -60,7 +60,7 @@ void main() {
     if (mc_Entity.x < -0.5) {
         // Used for MOD_LIGHT_DETECTION
         #ifdef MOD_PLANT_DETECTION
-            if (abs(max(abs(gl_Normal.x), abs(gl_Normal.z)) - 0.5) < 0.4) {
+            if (abs(max(abs(gl_Normal.x), abs(gl_Normal.z)) - 0.5) < 0.49) {
                 material = 19968;
             }
         #endif
