@@ -49,6 +49,15 @@ vec3 atmosphereAbsorptionLUT(float height, float angle) {
     return textureLod(colortex7, vec2(lutHeight, lutAngle), 0.0).rgb;
 }
 
+vec3 atmosphereStarTransmittance(vec3 worldPos, vec3 worldDir) {
+    vec3 originPos = worldPos;
+    originPos.y += max(cameraPosition.y + WORLD_BASIC_HEIGHT + earthRadius, 300.0 + earthRadius);
+    float originHeight2 = dot(originPos, originPos);
+    float originHeightInv = inversesqrt(originHeight2);
+    float originHeight = originHeight2 * originHeightInv;
+    return atmosphereAbsorptionLUT(originHeight, dot(worldDir, originPos) * originHeightInv);
+}
+
 void atmosphereAbsorptionDoubleSideLUT(float height, float angle, out vec3 sunAbsorption, out vec3 moonAbsorption) {
     float lutHeight = sqrt(clamp((height - earthRadius) / atmosphereThickness, 0.0, 1.0)) * 255.0 / 256.0 + 0.5 / 256.0;
     float sunLutAngle = 0.5 + angle * 255.0 / 512.0;

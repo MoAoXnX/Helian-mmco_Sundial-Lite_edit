@@ -30,6 +30,7 @@ in vec3 skyColorUp;
 #include "/libs/Atmosphere.glsl"
 #include "/libs/Cloud.glsl"
 #include "/libs/GbufferData.glsl"
+#include "/libs/Galaxy.glsl"
 
 void main() {
     ivec2 texel = ivec2(gl_FragCoord.st);
@@ -63,6 +64,10 @@ void main() {
     else {
         backDepth = 0.0;
         solidColor.rgb = singleAtmosphereScattering(solidColor.rgb, gbufferModelViewInverse[3].xyz, worldDir, sunDirection, intersectionData, skyColorUp, (30.0), backColor);
+        float skyLum = dot(solidColor.rgb, vec3(0.3333));
+        float starVisibility = 1.0 - smoothstep(0.05, 0.6, skyLum);
+        vec3 starTransmittance = atmosphereStarTransmittance(gbufferModelViewInverse[3].xyz, worldDir);
+        solidColor.rgb += endStars(worldDir) * starVisibility * starTransmittance;
         #ifdef PLANE_CLOUD
             planeCloud = planeClouds(gbufferModelViewInverse[3].xyz, worldDir, sunDirection, skyColorUp, intersectionData.xyz);
         #endif

@@ -10,6 +10,18 @@ vec2 hash2(vec2 p) {
 
 // Octahedron random star by GeForceLegend
 float endStars(vec3 direction) {
+    float sunPathRad = -sunPathRotation * PI / 180.0;
+    float cpr = cos(sunPathRad);
+    float spr = sin(sunPathRad);
+    mat3 tiltX = mat3(vec3(1.0, 0.0, 0.0), vec3(0.0, cpr, spr), vec3(0.0, -spr, cpr));
+    mat3 tiltXInv = mat3(vec3(1.0, 0.0, 0.0), vec3(0.0, cpr, -spr), vec3(0.0, spr, cpr));
+
+    float angle = frameTimeCounter * 2.0 * PI / 1000.0;
+    float c = cos(angle);
+    float s = sin(angle);
+    mat3 spinZ = mat3(vec3(c, -s, 0.0), vec3(s, c, 0.0), vec3(0.0, 0.0, 1.0));
+
+    direction = tiltX * (spinZ * (tiltXInv * direction));
     vec2 samplePos = encodeNormal(direction) * 0.5 + 0.5;
     float starColor = 0.0;
     float sampleSize = floor(1300.0 * END_GALAXY_AMOUNT);

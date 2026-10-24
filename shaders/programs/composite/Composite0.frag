@@ -42,9 +42,7 @@ in vec2 texcoord;
 #include "/libs/Cloud.glsl"
 #include "/libs/GbufferData.glsl"
 
-#ifdef THE_END
-    #include "/libs/Galaxy.glsl"
-#endif
+#include "/libs/Galaxy.glsl"
 
 vec3 reflectionWeight(vec3 viewDir, vec3 lightDir, vec3 f0, vec3 f82) {
     float LdotH2 = clamp(dot(-viewDir, lightDir) * 0.5 + 0.5, 0.0, 1.0);
@@ -256,6 +254,10 @@ vec4 reflection(GbufferData gbufferData, float depth, vec3 f0, vec3 f82, float f
                 vec4 intersectionData = planetIntersectionData(worldPos, rayDir);
                 vec3 atmosphere;
                 reflectionColor.rgb = singleAtmosphereScattering(reflectionColor.rgb, worldPos, rayDir, sunDirection, intersectionData, skyColorUp, 30.0, atmosphere);
+                float skyLum = dot(reflectionColor.rgb, vec3(0.3333));
+                float starVisibility = 1.0 - smoothstep(0.05, 0.6, skyLum);
+                vec3 starTransmittance = atmosphereStarTransmittance(worldPos, rayDir);
+                reflectionColor.rgb += endStars(rayDir) * starVisibility * starTransmittance * exp2(50.0 * (gbufferData.smoothness - 1.0));
                 vec4 planeCloud = vec4(0.0);
                 #ifdef PLANE_CLOUD
                     planeCloud = planeClouds(worldPos, rayDir, sunDirection, skyColorUp, intersectionData.xyz);
