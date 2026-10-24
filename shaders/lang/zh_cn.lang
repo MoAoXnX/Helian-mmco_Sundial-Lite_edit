@@ -60,6 +60,8 @@ profile.Vanilla=原版MC
 screen.MODIFIED_SETTINGS=Modified选项汇总
 screen.BASICLIGHT_WORLD0_OPTIONS=基础亮度选项(world0)
 screen.SkyColor=天空颜色
+screen.REALISTICCLOUDQUALITY_IN_REF=反射中质量
+screen.SUNGLINT=阳光高光
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=各向异性过滤
@@ -206,7 +208,12 @@ option.SKYC_R=天空颜色：红
 option.SKYC_G=天空颜色：绿
 option.SKYC_B=天空颜色：蓝
 option.ENVIROMENT_BRIGHTNESS=环境光亮度 (别动这个选项)
-option.SUNLIGHTSPECULARROUGH=阳光反射粗糙度
+option.SUN_SPECULAR_ROUGH=阳光高光粗糙度
+option.GROUND_SUN_GLINT_STRENGTH=地面阳光高光强度
+option.GROUND_SUN_GLINT_SMOOTHNESS=地面阳光高光光滑度
+option.GROUND_SUN_GLINT=地面阳光高光
+value.GROUND_SUN_GLINT.0=关
+value.GROUND_SUN_GLINT.1=开
 # LightColor
 option.LIGHT_BRIGHTNESS=光源亮度
 option.LIGHT_COLOR_R=光源颜色：红
@@ -326,6 +333,12 @@ option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES=体积云阴影光照采样数
 option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES.comment=日光与月光的光照采样数
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES=体积云阴影光照噪声层数
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES.comment=计算体积云的阴影光照时对云进行采样时所用的噪声层数
+option.CLOUD_REALISTIC_HQ_SAMPLES_REFLECTION=反射中体积云采样数
+option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES_REFLECTION=反射中体积云阴影光照采样数
+option.CLOUD_REALISTIC_OCTAVES_REFLECTION=反射中体积云噪声层数
+option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES_REFLECTION=反射中体积云阴影光照噪声层数
+option.CLOUD_REALISTIC_MIE_STRENGTH=体积云米氏散射强度
+option.CLOUD_REALISTIC_MIE_G=体积云米氏散射G值
 # RealisticCloudShape
 option.CLOUD_REALISTIC_OCTAVES=体积云噪声层数
 option.CLOUD_REALISTIC_OCTAVES.comment=噪声层数越多体积云细节越多. 影响性能

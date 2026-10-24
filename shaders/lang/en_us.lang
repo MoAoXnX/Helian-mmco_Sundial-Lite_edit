@@ -52,6 +52,8 @@ profile.Vanilla=Vanilla MC
 screen.MODIFIED_SETTINGS=Modified settings
 screen.BASICLIGHT_WORLD0_OPTIONS=Basic light options (world0)
 screen.SkyColor=Sky Color
+screen.REALISTICCLOUDQUALITY_IN_REF=Quality in reflection
+screen.SUNGLINT=Sun glint
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter
@@ -194,7 +196,12 @@ option.SKYC_R=Sky color: red
 option.SKYC_G=Sky color: green
 option.SKYC_B=Sky color: blue
 option.ENVIROMENT_BRIGHTNESS=Enviroment brightness (Don't touch it)
-option.SUNLIGHTSPECULARROUGH=Sunlight specular roughness
+option.SUN_SPECULAR_ROUGH=Sun specular roughness
+option.GROUND_SUN_GLINT_STRENGTH=Ground sun glint strength
+option.GROUND_SUN_GLINT_SMOOTHNESS=Ground sun glint smoothness
+option.GROUND_SUN_GLINT=Ground sun glint
+value.GROUND_SUN_GLINT.0=Off
+value.GROUND_SUN_GLINT.1=On
 # LightColor
 option.LIGHT_BRIGHTNESS=Light brightness
 option.LIGHT_COLOR_R=Light color: red
@@ -303,6 +310,12 @@ option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES=Realistic cloud shadow light samples
 option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES.comment=Samples of sunlight and moonlight
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES=Realistic cloud shadow light octaves
 option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES.comment=Noise octaves when sampling shadow light for cloud
+option.CLOUD_REALISTIC_HQ_SAMPLES_REFLECTION=Realistic cloud samples in reflection
+option.CLOUD_REALISTIC_SHADOWLIGHT_SAMPLES_REFLECTION=Realistic cloud shadow light samples in reflection
+option.CLOUD_REALISTIC_OCTAVES_REFLECTION=Realistic cloud noise octaves in reflection
+option.CLOUD_REALISTIC_SHADOWLIGHT_OCTAVES_REFLECTION=Realistic cloud shadow light octaves in reflection
+option.CLOUD_REALISTIC_MIE_STRENGTH=Realistic cloud Mie strength
+option.CLOUD_REALISTIC_MIE_G=Realistic cloud MieG
 # RealisticCloudShape
 option.CLOUD_REALISTIC_OCTAVES=Realistic cloud noise octaves
 option.CLOUD_REALISTIC_OCTAVES.comment=More layer means more detailed cloud, with performance cost

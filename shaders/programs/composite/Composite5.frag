@@ -51,6 +51,8 @@ in vec2 texcoord;
     #define VOLUMETRIC_FOG_OCTAVES 4 // [1 2 3 4 5 6 7 8 9 10]
     #define VOLUMETRIC_FOG_OCTAVE_SCALE 2.8 // [2.0 2.1 2.2 2.3 2.4 2.5 2.55 2.6 2.65 2.7 2.75 2.8 2.85 2.9 2.95 3.0 3.1 3.2 3.3 3.4 3.5 3.6 3.7 3.8 3.9 4.0]
     #define VOLUMETRIC_FOG_OCTAVE_FADE 0.45 // [0.0 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1.0]
+    #define VOLUMETRIC_FOG_MIE_STRENGTH 0.1 // [0.0 0.02 0.04 0.06 0.08 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.6 0.7 0.8 0.9 1.0]
+    #define VOLUMETRIC_FOG_MIE_G 0.7 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.76 0.8 0.85 0.9 0.95]
 
 #include "/settings/CloudSettings.glsl"
 #include "/settings/GlobalSettings.glsl"
@@ -334,6 +336,9 @@ void main() {
 
                     volumetricFogScattering = heightDensity * VOLUMETRIC_FOG_DENSITY * (timeStrength * (VOLUMETRIC_FOG_MORNING_DENSITY - VOLUMETRIC_FOG_NOON_DENSITY) + VOLUMETRIC_FOG_NOON_DENSITY);
                 }
+                #if defined VOLUMETRIC_FOG && defined SHADOW_AND_SKY
+                    float fogMiePhase = mix(1.0, cloudMiePhase(LdotV, VOLUMETRIC_FOG_MIE_G) / cloudMiePhase(0.0, VOLUMETRIC_FOG_MIE_G), VOLUMETRIC_FOG_MIE_STRENGTH);
+                #endif
 
                 float noise = bayer64Temporal(gl_FragCoord.xy);
                 float maxHorizonalRange = far + 32.0;
@@ -389,7 +394,7 @@ void main() {
                     singleLight *= sunColor * SUNLIGHT_BRIGHTNESS;
                     #ifdef VOLUMETRIC_FOG
                         float sampleVolumetricFogDensity = volumetricFogDensity(samplePos) * volumetricFogScattering;
-                        singleLight *= sampleVolumetricFogDensity * 5.0 + airScattering;
+                        singleLight *= sampleVolumetricFogDensity * 1.0 * fogMiePhase + airScattering;
                         singleLight += sampleVolumetricFogDensity * skyScattering;
                     #else
                         singleLight *= airScattering;

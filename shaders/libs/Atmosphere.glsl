@@ -10,8 +10,8 @@ const float mieG = 0.76;
 const float mieG2 = mieG * mieG;
 
 const float earthRadius = 6371000.0;
-const float atmosphereHeight = earthRadius + 100000.0;
 const float atmosphereThickness = 100000.0;
+const float atmosphereHeight = earthRadius + 100000.0;
 const float sunRadius = 0.02;
 const vec2 earthScaledHeight = 1.44269502 * earthRadius / scaledHeight;
 
