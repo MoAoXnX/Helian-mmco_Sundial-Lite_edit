@@ -403,8 +403,6 @@ void main() {
             (plantSkyNormal.y * 0.3 + 0.6 + mix(dot(plantSkyNormal, sunDirection), dot(plantSkyNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
         #ifdef IS_IRIS
             vec3 worldPos = viewToWorldPos(viewPos);
-            float eyeRelatedDistance = length(worldPos + relativeEyePosition);
-            gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
             #ifdef DIRECTIONAL_LIGHT_LEVEL
                 vec3 viewOffset = worldToViewPos(worldPos + relativeEyePosition);
                 float normalAngle = (dot(viewOffset, gbufferData.geoNormal) - dot(viewOffset, gbufferData.normal)) * inversesqrt(dot(viewOffset, viewOffset));
@@ -456,6 +454,14 @@ void main() {
         lightColor *= diffuseAbsorption + diffuseWeight / PI;
         lightColor *= gbufferData.albedo.rgb;
         colorData.rgb += lightColor;
+        if (heldBlockLightValue > 0) {
+            float dist = length(viewPos);
+            vec3 surfaceDir = viewPos / max(dist, 1e-4);
+            float rangeFade = clamp(1.0 - dist / HELD_LIGHT_RANGE, 0.0, 1.0);
+            float NdotL = clamp(dot(gbufferData.normal, -surfaceDir), 0.0, 1.0);
+            float intensity = heldBlockLightValue / 15.0 * rangeFade * rangeFade * NdotL;
+            colorData.rgb += commonLightColor * intensity * (gbufferData.albedo.rgb * diffuseAbsorption);
+        }
     }
     texBuffer3 = vec4(colorData.rgb, 1.0);
     texBuffer5 = currData;
