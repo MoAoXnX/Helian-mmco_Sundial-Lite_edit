@@ -258,6 +258,12 @@ void main() {
             vanillaLight += nightVision * NIGHT_VISION_BRIGHTNESS;
         #endif
         solidColor.rgb += gbufferData.albedo.rgb * gbufferData.albedo.w * (gbufferData.emissive * PBR_BRIGHTNESS * PI + vanillaLight * isTargetParticle);
+        if (heldBlockLightValue > 0 && isTargetParticle > 0.5) {
+            float heldLightDist = length(waterViewPos);
+            float heldRangeFade = clamp(1.0 - heldLightDist / HELD_LIGHT_RANGE, 0.0, 1.0);
+            float heldIntensity = heldBlockLightValue / 15.0 * heldRangeFade * heldRangeFade;
+            solidColor.rgb += commonLightColor * heldIntensity * (gbufferData.albedo.rgb * gbufferData.albedo.w);
+        }
         #if defined SHADOW_AND_SKY || defined END_FLASH
             float NdotL = clamp(dot(worldNormal, shadowDirection) + isTargetParticle, 0.0, 1.0);
             if (NdotL > 0.0) {
