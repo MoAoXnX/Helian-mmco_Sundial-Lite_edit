@@ -223,6 +223,7 @@ option.LIGHT_BRIGHTNESS=光源亮度
 option.LIGHT_COLOR_R=光源颜色：红
 option.LIGHT_COLOR_G=光源颜色：绿
 option.LIGHT_COLOR_B=光源颜色：蓝
+option.HELD_LIGHT_RANGE=手持光照范围
 # VisibilityBitmask
 option.VBGI=VBGI
 option.VBGI.comment=使用可见性位遮罩计算全局光照
@@ -381,6 +382,7 @@ option.CLOUD_REALISTIC_BASIC_SKYLIGHT=体积云基础天空光照
 option.CLOUD_REALISTIC_BASIC_SKYLIGHT.comment=用于模拟地面反射到云底的光线
 option.CLOUD_REALISTIC_SHADOWLIGHT_STEPSCALE=体积云阴影光照采样步长缩放
 option.CLOUD_REALISTIC_FADE_DISTANCE=体积云消散距离
+option.CLOUD_SUNLIGHT_STRENGTH=云层阳光光照强度
 
 # PostProcessing
 option.DISTORTION_STRENGTH=畸变强度

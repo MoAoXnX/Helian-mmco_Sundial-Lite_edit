@@ -210,6 +210,7 @@ option.LIGHT_BRIGHTNESS=Light brightness
 option.LIGHT_COLOR_R=Light color: red
 option.LIGHT_COLOR_G=Light color: green
 option.LIGHT_COLOR_B=Light color: blue
+option.HELD_LIGHT_RANGE=Held light range
 # VisibilityBitmask
 option.VBGI=VBGI
 option.VBGI.comment=Visibility bitmask global illumination
@@ -343,6 +344,7 @@ option.CLOUD_REALISTIC_BASIC_SHADOWLIGHT=Realistic cloud basic shadow light
 option.CLOUD_REALISTIC_BASIC_SKYLIGHT=Realistic cloud basic skylight
 option.CLOUD_REALISTIC_SHADOWLIGHT_STEPSCALE=Shadow light sample step scale
 option.CLOUD_REALISTIC_FADE_DISTANCE=Realistic cloud fade distance
+option.CLOUD_SUNLIGHT_STRENGTH=Cloud sunlight strength
 
 # PostProcessing
 option.DISTORTION_STRENGTH=Disortion strength
