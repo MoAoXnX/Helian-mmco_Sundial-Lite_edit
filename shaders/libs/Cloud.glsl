@@ -219,6 +219,7 @@ vec4 sampleRealisticCloud(vec3 cloudPos, vec3 sunDir, vec3 atmosphere, float noi
         cloudDistance = cloudDistance2 * cloudDistance;
         vec3 sunlightStrength, moonlightStrength;
         atmosphereAbsorptionDoubleSideLUT(cloudDistance, RdotP, sunlightStrength, moonlightStrength);
+        moonlightStrength *= vec3(1.0) + (MOONLIGHT_TINT - vec3(1.0)) * nightFactor;
         RdotP *= abs(RdotP);
         sunlightStrength *= atmosphereAbsorptionGround(RdotP, cloudDistance);
         moonlightStrength *= atmosphereAbsorptionGround(-RdotP, cloudDistance);
@@ -493,6 +494,7 @@ vec4 planeClouds(vec3 worldPos, vec3 worldDir, vec3 sunDirection, vec3 skyColorU
             float cloudHeight = cloudHeight2 * cloudHeightInv;
             vec3 sunlightStrength, moonlightStrength;
             atmosphereAbsorptionDoubleSideLUT(cloudHeight, LdotP, sunlightStrength, moonlightStrength);
+            moonlightStrength *= vec3(1.0) + (MOONLIGHT_TINT - vec3(1.0)) * nightFactor;
             LdotP *= abs(LdotP);
             sunlightStrength *= atmosphereAbsorptionGround(LdotP, cloudHeight);
             moonlightStrength *= atmosphereAbsorptionGround(-LdotP, cloudHeight);
