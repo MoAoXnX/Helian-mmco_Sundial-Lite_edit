@@ -53,124 +53,120 @@ const float shadowDistance = 120.0; // [80.0 120.0 160.0 200.0 240.0 280.0 320.0
         vec3 worldPos, vec3 worldGeoNormal, float NdotL, float viewLength, float smoothness,
         float porosity, float skyLight, vec2 noise, inout vec3 shadow, inout vec3 subsurfaceScattering
     ) {
-        basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
-        shadow *= basicSunlight;
-        subsurfaceScattering *= basicSunlight * clamp(SUBSERFACE_SCATTERING_STRENTGH * 1e+10, 0.0, 1.0);
-        if (true) {
-            vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
-            float normalOffsetLen = (viewLength * 2e-3 + 2e-2) * (1.0 + sqrt(1.0 - NdotL));
-            vec3 normalOffset = mat3(shadowModelViewProj0, shadowModelViewProj1, shadowModelViewProj2) * (worldGeoNormal * normalOffsetLen * 4096.0 / realShadowMapResolution);
-            normalOffset.z *= 0.1;
+        subsurfaceScattering *= clamp(SUBSERFACE_SCATTERING_STRENTGH * 1e+10, 0.0, 1.0);
+        vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
+        float normalOffsetLen = (viewLength * 2e-3 + 2e-2) * (1.0 + sqrt(1.0 - NdotL));
+        vec3 normalOffset = mat3(shadowModelViewProj0, shadowModelViewProj1, shadowModelViewProj2) * (worldGeoNormal * normalOffsetLen * 4096.0 / realShadowMapResolution);
+        normalOffset.z *= 0.1;
 
-            vec3 basicShadowCoordNoDistort = sssShadowCoord + normalOffset;
-            sssShadowCoord = distortShadowCoord(sssShadowCoord - normalOffset);
-            float clipLengthInv = inversesqrt(dot(basicShadowCoordNoDistort.xy, basicShadowCoordNoDistort.xy));
-            float distortFactor = clipLengthInv * log2(distortionStrength / clipLengthInv + 1.0) / log2(distortionStrength + 1.0);
-            vec3 basicShadowCoord = basicShadowCoordNoDistort;
-            basicShadowCoord.st = basicShadowCoord.st * 0.25 * distortFactor + 0.75;
-            float distortDerivative = distortionStrength / (log(distortionStrength + 1.0) * (distortionStrength / clipLengthInv + 1.0));
+        vec3 basicShadowCoordNoDistort = sssShadowCoord + normalOffset;
+        sssShadowCoord = distortShadowCoord(sssShadowCoord - normalOffset);
+        float clipLengthInv = inversesqrt(dot(basicShadowCoordNoDistort.xy, basicShadowCoordNoDistort.xy));
+        float distortFactor = clipLengthInv * log2(distortionStrength / clipLengthInv + 1.0) / log2(distortionStrength + 1.0);
+        vec3 basicShadowCoord = basicShadowCoordNoDistort;
+        basicShadowCoord.st = basicShadowCoord.st * 0.25 * distortFactor + 0.75;
+        float distortDerivative = distortionStrength / (log(distortionStrength + 1.0) * (distortionStrength / clipLengthInv + 1.0));
 
-            float normalFactor = clamp(pow(NdotL, pow2(1.0 - smoothness * 0.3)), 0.0, 1.0);
-            NdotL = abs(dot(worldGeoNormal, shadowDirection));
-            NdotL = NdotL + (1.0 - NdotL) * clamp(porosity * 255.0 / 191.0 - 64.0 / 191.0, 0.0, 1.0);
+        float normalFactor = clamp(pow(NdotL, pow2(1.0 - smoothness * 0.3)), 0.0, 1.0);
+        NdotL = abs(dot(worldGeoNormal, shadowDirection));
+        NdotL = NdotL + (1.0 - NdotL) * clamp(porosity * 255.0 / 191.0 - 64.0 / 191.0, 0.0, 1.0);
 
-            vec3 offsetDirection1 = cross(worldGeoNormal, shadowDirection);
-            vec3 offsetDirection2 = cross(worldGeoNormal, offsetDirection1);
-            offsetDirection1 = shadowSpaceSurfaceOffset(offsetDirection1);
-            offsetDirection2 = shadowSpaceSurfaceOffset(offsetDirection2);
-            basicShadowCoordNoDistort.z -= 2e-5;
+        vec3 offsetDirection1 = cross(worldGeoNormal, shadowDirection);
+        vec3 offsetDirection2 = cross(worldGeoNormal, offsetDirection1);
+        offsetDirection1 = shadowSpaceSurfaceOffset(offsetDirection1);
+        offsetDirection2 = shadowSpaceSurfaceOffset(offsetDirection2);
+        basicShadowCoordNoDistort.z -= 2e-5;
 
-            float avgOcclusionDepth = 0.0;
-            float depthSum = 0.0;
-            float depthSampleRadius = (0.5 + noise.y) * 2.0;
-            float offsetX = -depthSampleRadius;
-            for (int i = -1; i <= 1; i++) {
-                float offsetY = -depthSampleRadius;
-                for (int j = -1; j <= 1; j++) {
-                    vec3 sampleCoord = distortShadowCoord(basicShadowCoordNoDistort + offsetX * offsetDirection1 + offsetY * offsetDirection2);
-                    float sampleDepth = textureLod(shadowtex1, sampleCoord.st, 0.0).r;
-                    depthSum += sampleDepth;
-                    avgOcclusionDepth += clamp(sampleCoord.z - sampleDepth, 0.0, 1.0);
-                    offsetY += depthSampleRadius;
-                }
-                offsetX += depthSampleRadius;
+        float avgOcclusionDepth = 0.0;
+        float depthSum = 0.0;
+        float depthSampleRadius = (0.5 + noise.y) * 2.0;
+        float offsetX = -depthSampleRadius;
+        for (int i = -1; i <= 1; i++) {
+            float offsetY = -depthSampleRadius;
+            for (int j = -1; j <= 1; j++) {
+                vec3 sampleCoord = distortShadowCoord(basicShadowCoordNoDistort + offsetX * offsetDirection1 + offsetY * offsetDirection2);
+                float sampleDepth = textureLod(shadowtex1, sampleCoord.st, 0.0).r;
+                depthSum += sampleDepth;
+                avgOcclusionDepth += clamp(sampleCoord.z - sampleDepth, 0.0, 1.0);
+                offsetY += depthSampleRadius;
             }
-            if (depthSum < 8.9999 && all(lessThan(abs(basicShadowCoord - vec3(vec2(0.75), 0.5)), vec3(vec2(0.249), 0.5)))) {
-                float filterRadius = min(avgOcclusionDepth * 80.0 / 9.0, 4.0) + 0.02 * shadowDistance / distortFactor;
+            offsetX += depthSampleRadius;
+        }
+        if (depthSum < 8.9999 && all(lessThan(abs(basicShadowCoord - vec3(vec2(0.75), 0.5)), vec3(vec2(0.249), 0.5)))) {
+            float filterRadius = min(avgOcclusionDepth * 80.0 / 9.0, 4.0) + 0.02 * shadowDistance / distortFactor;
 
-                vec3 waterShadowCoord = basicShadowCoord - vec3(0.0, 0.5, 0.0);
-                float lightFactor = 1.0;
-                #if defined LIGHT_LEAKING_FIX && !defined END_FLASH
-                    lightFactor = clamp(skyLight * 10.0 + isEyeInWater, 0.0, 1.0);
-                #endif
-                vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection) * lightFactor;
-                shadow *= caustic;
-                subsurfaceScattering *= caustic;
+            vec3 waterShadowCoord = basicShadowCoord - vec3(0.0, 0.5, 0.0);
+            float lightFactor = 1.0;
+            #if defined LIGHT_LEAKING_FIX && !defined END_FLASH
+                lightFactor = clamp(skyLight * 10.0 + isEyeInWater, 0.0, 1.0);
+            #endif
+            vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection) * lightFactor;
+            shadow *= caustic;
+            subsurfaceScattering *= caustic;
 
-                noise.x *= PI * 2.0;
-                vec2 sampleAngle = vec2(cos(noise.x), sin(noise.x)) * filterRadius;
-                float sampleRadius = noise.y * 1.0 / PCSS_SAMPLES + 1e-6;
-                bool needSubsurfaceScattering = porosity > 64.5 / 255.0;
+            noise.x *= PI * 2.0;
+            vec2 sampleAngle = vec2(cos(noise.x), sin(noise.x)) * filterRadius;
+            float sampleRadius = noise.y * 1.0 / PCSS_SAMPLES + 1e-6;
+            bool needSubsurfaceScattering = porosity > 64.5 / 255.0;
 
-                float sssRadius = (0.25 + 0.25 / filterRadius) * distortDerivative;
-                float transparentShadow = 1e-6;
-                vec3 transparentShadowColor = vec3(0.0);
-                float opticalDepth = 0.0;
-                float solidShadow = 0.0;
-                for (int i = 0; i < PCSS_SAMPLES; i++) {
-                    vec2 sampleRotation = sampleRadius * inversesqrt(sampleRadius) * sampleAngle;
-                    vec3 sampleOffset = sampleRotation.x * offsetDirection1 + sampleRotation.y * offsetDirection2;
-                    vec3 sampleShadowCoord = distortShadowCoord(basicShadowCoordNoDistort + sampleOffset);
-                    if (normalFactor > 1e-5) {
-                        float sampleSolidShadow = textureLod(shadowtex0, sampleShadowCoord, 0.0);
-                        solidShadow += sampleSolidShadow;
-                    }
-
-                    if (needSubsurfaceScattering) {
-                        vec3 sssSampleCoord = sssShadowCoord + vec3(sampleOffset.st * sssRadius, 0.0);
-                        float shadowDepth = textureLod(shadowtex1, sssSampleCoord.st, 0.0).r;
-                        opticalDepth += clamp(sssSampleCoord.z - shadowDepth + 1e-4, 0.0, 1.0);
-                    }
-
-                    sampleAngle = goldenRotate * sampleAngle;
-                    sampleRadius += 1.0 / PCSS_SAMPLES;
-                    #ifdef TRANSPARENT_SHADOW
-                        sampleShadowCoord.x -= 0.5;
-                        float sampleTransparentShadow = textureLod(shadowtex0, sampleShadowCoord, 0.0);
-                        if (sampleTransparentShadow < 1.0) {
-                            sampleTransparentShadow = 1.0 - sampleTransparentShadow;
-                            vec3 sampleTransparentColor = textureLod(shadowcolor0, sampleShadowCoord.st, 0.0).rgb;
-                            transparentShadow += sampleTransparentShadow;
-                            transparentShadowColor += sampleTransparentColor * sampleTransparentShadow;
-                        }
-                    #endif
+            float sssRadius = (0.25 + 0.25 / filterRadius) * distortDerivative;
+            float transparentShadow = 1e-6;
+            vec3 transparentShadowColor = vec3(0.0);
+            float opticalDepth = 0.0;
+            float solidShadow = 0.0;
+            for (int i = 0; i < PCSS_SAMPLES; i++) {
+                vec2 sampleRotation = sampleRadius * inversesqrt(sampleRadius) * sampleAngle;
+                vec3 sampleOffset = sampleRotation.x * offsetDirection1 + sampleRotation.y * offsetDirection2;
+                vec3 sampleShadowCoord = distortShadowCoord(basicShadowCoordNoDistort + sampleOffset);
+                if (normalFactor > 1e-5) {
+                    float sampleSolidShadow = textureLod(shadowtex0, sampleShadowCoord, 0.0);
+                    solidShadow += sampleSolidShadow;
                 }
+
+                if (needSubsurfaceScattering) {
+                    vec3 sssSampleCoord = sssShadowCoord + vec3(sampleOffset.st * sssRadius, 0.0);
+                    float shadowDepth = textureLod(shadowtex1, sssSampleCoord.st, 0.0).r;
+                    opticalDepth += clamp(sssSampleCoord.z - shadowDepth + 1e-4, 0.0, 1.0);
+                }
+
+                sampleAngle = goldenRotate * sampleAngle;
+                sampleRadius += 1.0 / PCSS_SAMPLES;
                 #ifdef TRANSPARENT_SHADOW
-                    transparentShadowColor /= transparentShadow;
-                    transparentShadow /= PCSS_SAMPLES;
-                    transparentShadowColor *= transparentShadowColor;
-                    transparentShadowColor = mix(vec3(1.0), transparentShadowColor, vec3(transparentShadow));
-                    shadow *= transparentShadowColor;
-                    subsurfaceScattering *= transparentShadowColor;
+                    sampleShadowCoord.x -= 0.5;
+                    float sampleTransparentShadow = textureLod(shadowtex0, sampleShadowCoord, 0.0);
+                    if (sampleTransparentShadow < 1.0) {
+                        sampleTransparentShadow = 1.0 - sampleTransparentShadow;
+                        vec3 sampleTransparentColor = textureLod(shadowcolor0, sampleShadowCoord.st, 0.0).rgb;
+                        transparentShadow += sampleTransparentShadow;
+                        transparentShadowColor += sampleTransparentColor * sampleTransparentShadow;
+                    }
                 #endif
+            }
+            #ifdef TRANSPARENT_SHADOW
+                transparentShadowColor /= transparentShadow;
+                transparentShadow /= PCSS_SAMPLES;
+                transparentShadowColor *= transparentShadowColor;
+                transparentShadowColor = mix(vec3(1.0), transparentShadowColor, vec3(transparentShadow));
+                shadow *= transparentShadowColor;
+                subsurfaceScattering *= transparentShadowColor;
+            #endif
 
-                solidShadow *= normalFactor / PCSS_SAMPLES;
-                if (needSubsurfaceScattering && SUBSERFACE_SCATTERING_STRENTGH > 0.0) {
-                    const float absorptionScale = SUBSERFACE_SCATTERING_STRENTGH / (191.0);
-                    float absorptionBeta = -4e+3 * 0.5 * 1.44269502 / max(porosity * absorptionScale * 255.0 - absorptionScale * 64.0, 1e-5) * opticalDepth / PCSS_SAMPLES;
-                    float fade = clamp(viewLength / 16.0 - shadowDistance / 16.0, 0.0, 1.0);
-                    subsurfaceScattering *= mix(
-                        exp2(absorptionBeta) * (1.0 - solidShadow) * NdotL,
-                        skyLight * (1.0 - normalFactor) * NdotL * step(64.5 / 255.0, porosity),
-                        fade
-                    );
-                }
-                shadow *= solidShadow;
+            solidShadow *= normalFactor / PCSS_SAMPLES;
+            if (needSubsurfaceScattering && SUBSERFACE_SCATTERING_STRENTGH > 0.0) {
+                const float absorptionScale = SUBSERFACE_SCATTERING_STRENTGH / (191.0);
+                float absorptionBeta = -4e+3 * 0.5 * 1.44269502 / max(porosity * absorptionScale * 255.0 - absorptionScale * 64.0, 1e-5) * opticalDepth / PCSS_SAMPLES;
+                float fade = clamp(viewLength / 16.0 - shadowDistance / 16.0, 0.0, 1.0);
+                subsurfaceScattering *= mix(
+                    exp2(absorptionBeta) * (1.0 - solidShadow) * NdotL,
+                    skyLight * (1.0 - normalFactor) * NdotL * step(64.5 / 255.0, porosity),
+                    fade
+                );
             }
-            else {
-                shadow *= skyLight * normalFactor;
-                subsurfaceScattering *= skyLight * (1.0 - normalFactor) * NdotL * step(64.5 / 255.0, porosity);
-            }
+            shadow *= solidShadow;
+        }
+        else {
+            shadow *= skyLight * normalFactor;
+            subsurfaceScattering *= skyLight * (1.0 - normalFactor) * NdotL * step(64.5 / 255.0, porosity);
         }
     }
 
@@ -335,9 +331,9 @@ void main() {
             float NdotV = clamp(dot(viewDir, -gbufferData.normal), 0.0, 1.0);
             vec3 diffuseAbsorption = (1.0 - gbufferData.metalness) * diffuseAbsorptionWeight(NdotV, gbufferData.smoothness, f0, f82);
 
-            vec3 shadow = sunColor;
+            vec3 shadow = sunColor * basicSunlight;
             #ifdef END_FLASH
-                shadow = endFlashIntensity * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B);
+                shadow = endFlashIntensity * vec3(END_FOG_COLOR_R, END_FOG_COLOR_G, END_FOG_COLOR_B) * basicSunlight;
             #endif
             float NdotL = clamp(dot(gbufferData.normal, viewShadowDirection), 0.0, 1.0);
             vec3 shadowDiffuse = gbufferData.albedo.rgb * diffuseAbsorption;
