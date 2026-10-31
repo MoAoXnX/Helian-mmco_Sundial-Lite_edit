@@ -48,9 +48,9 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
     }
 
     #ifdef SHADOW_AND_SKY
-        float basicSunlight = 9.5 * SUNLIGHT_BRIGHTNESS;
+        float basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS * (1.0 - sqrt(weatherStrength) * SUNLIGHTINRAIN);
     #elif defined END_FLASH
-        float basicSunlight = 9.5 * SUNLIGHT_BRIGHTNESS;
+        float basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS;
     #else
         float basicSunlight = 0.0;
     #endif
@@ -59,52 +59,49 @@ const float realShadowMapResolution = shadowMapResolution * MC_SHADOW_QUALITY;
         vec3 worldPos, vec3 geoNormal, float NdotL, float smoothness, float porosity,
         float skyLight, inout vec3 shadow, inout vec3 subsurfaceScattering
     ) {
-        basicSunlight = 8.0 * SUNLIGHT_BRIGHTNESS - 8.0 * SUNLIGHT_BRIGHTNESS * sqrt(weatherStrength) * SUNLIGHTINRAIN;
         subsurfaceScattering *= clamp(SUBSERFACE_SCATTERING_STRENTGH * 1e+10, 0.0, 1.0);
-        if (true) {
-            vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
-            float normalFactor = clamp(pow(NdotL, pow2(1.0 - min(0.3, smoothness))), 0.0, 1.0);
-            worldPos += geoNormal * ((length(worldPos) * 2e-3 + 2e-2) * (1.0 + sqrt(1.0 - NdotL))) * 4096.0 / realShadowMapResolution;
-            vec3 shadowCoord = worldPosToShadowCoord(worldPos);
-            NdotL = abs(dot(geoNormal, shadowDirection));
-            NdotL = NdotL + (1.0 - NdotL) * clamp(porosity * 255.0 / 191.0 - 64.0 / 191.0, 0.0, 1.0);
-            if (any(greaterThan(abs(shadowCoord - vec3(vec2(0.75), 0.5)), vec3(vec2(0.25), 0.5)))) {
-                shadow *= skyLight * normalFactor;
-                subsurfaceScattering *= skyLight * (1.0 - normalFactor) * NdotL * step(64.5 / 255.0, porosity);
-            } else {
-                shadowCoord.z -= 4e-5;
-                float sssOffsetZ = sssShadowCoord.z - shadowCoord.z;
-                float rawShadow = textureLod(shadowtex0, shadowCoord, 0.0) * normalFactor;
-                float subsurfaceScatteringWeight = (1.0 - rawShadow) * NdotL;
-                shadow *= vec3(rawShadow);
+        vec3 sssShadowCoord = worldPosToShadowCoordNoDistort(worldPos);
+        float normalFactor = clamp(pow(NdotL, pow2(1.0 - min(0.3, smoothness))), 0.0, 1.0);
+        worldPos += geoNormal * ((length(worldPos) * 2e-3 + 2e-2) * (1.0 + sqrt(1.0 - NdotL))) * 4096.0 / realShadowMapResolution;
+        vec3 shadowCoord = worldPosToShadowCoord(worldPos);
+        NdotL = abs(dot(geoNormal, shadowDirection));
+        NdotL = NdotL + (1.0 - NdotL) * clamp(porosity * 255.0 / 191.0 - 64.0 / 191.0, 0.0, 1.0);
+        if (any(greaterThan(abs(shadowCoord - vec3(vec2(0.75), 0.5)), vec3(vec2(0.25), 0.5)))) {
+            shadow *= skyLight * normalFactor;
+            subsurfaceScattering *= skyLight * (1.0 - normalFactor) * NdotL * step(64.5 / 255.0, porosity);
+        } else {
+            shadowCoord.z -= 4e-5;
+            float sssOffsetZ = sssShadowCoord.z - shadowCoord.z;
+            float rawShadow = textureLod(shadowtex0, shadowCoord, 0.0) * normalFactor;
+            float subsurfaceScatteringWeight = (1.0 - rawShadow) * NdotL;
+            shadow *= vec3(rawShadow);
 
-                if (porosity > 64.5 / 255.0) {
-                    float shadowDepth = textureLod(shadowtex1, shadowCoord.st, 0.0).r;
-                    float opticalDepth = clamp(shadowCoord.z - shadowDepth + sssOffsetZ, 0.0, 1.0);
-                    const float absorptionScale = SUBSERFACE_SCATTERING_STRENTGH / (191.0);
-                    float absorptionBeta = -4e+3 * 0.5 * 1.44269502 / max(porosity * absorptionScale * 255.0 - absorptionScale * 64.0, 1e-5) * opticalDepth;
+            if (porosity > 64.5 / 255.0) {
+                float shadowDepth = textureLod(shadowtex1, shadowCoord.st, 0.0).r;
+                float opticalDepth = clamp(shadowCoord.z - shadowDepth + sssOffsetZ, 0.0, 1.0);
+                const float absorptionScale = SUBSERFACE_SCATTERING_STRENTGH / (191.0);
+                float absorptionBeta = -4e+3 * 0.5 * 1.44269502 / max(porosity * absorptionScale * 255.0 - absorptionScale * 64.0, 1e-5) * opticalDepth;
 
-                    subsurfaceScattering *= exp2(absorptionBeta) * subsurfaceScatteringWeight;
-                }
-
-                #ifdef TRANSPARENT_SHADOW
-                    vec3 transparentShadowCoord = shadowCoord - vec3(0.5, 0.0, 0.0);
-                    vec3 transparentShadowColor = pow2(textureLod(shadowcolor0, transparentShadowCoord.st, 0.0).rgb);
-                    float transparentShadowStrength = textureLod(shadowtex0, transparentShadowCoord, 0.0);
-                    transparentShadowColor = mix(transparentShadowColor, vec3(1.0), vec3(transparentShadowStrength));
-                    shadow *= transparentShadowColor;
-                    subsurfaceScattering *= transparentShadowColor;
-                #endif
-
-                vec3 waterShadowCoord = shadowCoord - vec3(0.0, 0.5, 0.0);
-                float lightFactor = 1.0;
-                #if defined LIGHT_LEAKING_FIX && !defined END_FLASH
-                    lightFactor = clamp(skyLight * 10.0 + isEyeInWater, 0.0, 1.0);
-                #endif
-                vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection) * lightFactor;
-                shadow *= caustic;
-                subsurfaceScattering *= caustic;
+                subsurfaceScattering *= exp2(absorptionBeta) * subsurfaceScatteringWeight;
             }
+
+            #ifdef TRANSPARENT_SHADOW
+                vec3 transparentShadowCoord = shadowCoord - vec3(0.5, 0.0, 0.0);
+                vec3 transparentShadowColor = pow2(textureLod(shadowcolor0, transparentShadowCoord.st, 0.0).rgb);
+                float transparentShadowStrength = textureLod(shadowtex0, transparentShadowCoord, 0.0);
+                transparentShadowColor = mix(transparentShadowColor, vec3(1.0), vec3(transparentShadowStrength));
+                shadow *= transparentShadowColor;
+                subsurfaceScattering *= transparentShadowColor;
+            #endif
+
+            vec3 waterShadowCoord = shadowCoord - vec3(0.0, 0.5, 0.0);
+            float lightFactor = 1.0;
+            #if defined LIGHT_LEAKING_FIX && !defined END_FLASH
+                lightFactor = clamp(skyLight * 10.0 + isEyeInWater, 0.0, 1.0);
+            #endif
+            vec3 caustic = waterCaustic(waterShadowCoord, worldPos, shadowDirection) * lightFactor;
+            shadow *= caustic;
+            subsurfaceScattering *= caustic;
         }
     }
 #endif
