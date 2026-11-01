@@ -62,7 +62,7 @@ vec2 waterWaveNormal(vec2 coord) {
     vec2 totalNormal = vec2(0.0);
     mat2 normalRotation = transpose(goldenRotate) * mat2(32.0);
     const mat2 layerRotation = mat2(WATER_WAVE_LAYERS_SCALE) * mat2(goldenRotate[0].x, goldenRotate[1].x, goldenRotate[0].y, goldenRotate[1].y);
-    float region = textureLod(noisetex, coord * 0.01 + vec2(frameTimeCounter * 5e-4, 0.0), 0.0).b;
+    float region = textureLod(noisetex, coord * 0.005 + vec2(frameTimeCounter * 5e-4, 0.0), 0.0).b;
     coord *= 32.0;
     float totalHeight = 0.0;
     float currentWeight = 1.0;
