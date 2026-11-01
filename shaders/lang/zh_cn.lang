@@ -103,6 +103,7 @@ option.WATER_WAVE_HEIGHT_LAYERS=水波高度层数
 option.WATER_WAVE_HEIGHT_LAYERS.comment=计算水面视差时使用的水波数量. 不建议调至极高值
 option.WATER_WAVE_NORMAL_LAYERS=水波法线层数
 option.WATER_WAVE_NORMAL_LAYERS.comment=计算水面法线时使用的水波数量. 更高的值可让水面拥有更多细节，但会影响性能
+option.WATER_WAVE1_STRENGTH=大水波变化强度
 # Normal
 option.NORMAL_STRENGTH=法线强度
 option.NORMAL_FORMAT=法线格式
