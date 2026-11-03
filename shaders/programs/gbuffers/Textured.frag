@@ -38,6 +38,10 @@ noperspective in vec4 coordRange;
 #include "/libs/Common.glsl"
 #include "/libs/Parallax.glsl"
 
+#if (defined ENTITIES || defined HAND) && RAIN_PUDDLE_ENTITY > 0
+    #define USE_RAIN_PUDDLE
+#endif
+
 #ifdef ENTITY_VERTEX_TBN
     in mat3 vertexTbnMatrix;
 #endif
