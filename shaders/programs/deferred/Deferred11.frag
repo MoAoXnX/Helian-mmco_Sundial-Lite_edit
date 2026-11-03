@@ -342,7 +342,7 @@ void main() {
                 airAbsorption(11.4 * gbufferData.smoothness) * clamp((19.0 + SLSR_TEST1) - gbufferData.smoothness * (20.0 - SLSR_TEST1), 0.0, 1.0);
             vec3 groundSunGlint = vec3(0.0);
             #if GROUND_SUN_GLINT == 1
-                if (gbufferData.materialID == MAT_GRASS || gbufferData.materialID == MAT_DEFAULT) {
+                if (gbufferData.materialID == MAT_GRASS || gbufferData.materialID == MAT_DEFAULT || gbufferData.materialID == MAT_HAND) {
                     groundSunGlint = sunlightSpecular(
                         viewDir, viewShadowDirection, gbufferData.geoNormal,
                         GROUND_SUN_GLINT_SMOOTHNESS,
