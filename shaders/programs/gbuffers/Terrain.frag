@@ -277,7 +277,7 @@ void main() {
         float blockLightDirHelperLen = dot(blockLightDirHelper, blockLightDirHelper);
         if (blockLightDirHelperLen > 0.0) {
             vec3 blockLightDir = cross(blockLightDirHelper, normal) / blockLightDirHelperLen;
-            rawData.lightmap.x += dot(blockLightDir, rawData.normal) * DIRECTIONAL_BLOCK_LIGHT_STRENGTH * 15.0 / dot(blockLightDir, blockLightDir) * (rawData.lightmap.x - rawData.lightmap.x * rawData.lightmap.x);
+            rawData.lightmap.x += dot(blockLightDir, rawData.normal) * DIRECTIONAL_BLOCK_LIGHT_STRENGTH * 10.0 / dot(blockLightDir, blockLightDir) * (rawData.lightmap.x - rawData.lightmap.x * rawData.lightmap.x);
             rawData.lightmap.x = clamp(rawData.lightmap.x, 0.0, 1.0);
         }
 
@@ -285,7 +285,7 @@ void main() {
         float skyLightDirHelperLen = dot(skyLightDirHelper, skyLightDirHelper);
         if (skyLightDirHelperLen > 0.0) {
             vec3 skyLightDir = cross(skyLightDirHelper, normal) / skyLightDirHelperLen;
-            rawData.lightmap.y += dot(skyLightDir, rawData.normal) * DIRECTIONAL_SKY_LIGHT_STRENGTH * 15.0 / dot(skyLightDir, skyLightDir) * (rawData.lightmap.y - rawData.lightmap.y * rawData.lightmap.y);
+            rawData.lightmap.y += dot(skyLightDir, rawData.normal) * DIRECTIONAL_SKY_LIGHT_STRENGTH * 10.0 / dot(skyLightDir, skyLightDir) * (rawData.lightmap.y - rawData.lightmap.y * rawData.lightmap.y);
             rawData.lightmap.y = clamp(rawData.lightmap.y, 0.0, 1.0);
         }
     #endif
