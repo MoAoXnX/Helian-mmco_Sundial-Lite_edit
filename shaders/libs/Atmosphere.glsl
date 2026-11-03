@@ -255,8 +255,8 @@ float endAbsorptionBeta = 0.01 * END_FOG_DENSITY + blindnessFactor;
 vec3 solidAtmosphereScattering(vec3 color, vec3 worldDir, vec3 skyColor, float worldDepth, float skyLight) {
     vec3 absorption = exp2(-vec3(worldDepth * rainyMieBeta * (ASF_DENSITY + RF_DENSITY * 3.0 * weatherStrength * weatherStrength) * 10.0 * 1.44269502 * exp2((-WORLD_BASIC_HEIGHT - cameraPosition.y) / 1200.0)));
     vec3 scatteringColor = skyLight * (
-        0.1 * skyColor +
-        sunColor * SUNLIGHT_BRIGHTNESS * miePhase(dot(worldDir, shadowDirection), 0.4, 0.16)
+        0.1 * skyColor * (1.0 - weatherStrength * (1.0 - 0.1)) +
+        sunColor * SUNLIGHT_BRIGHTNESS * miePhase(dot(worldDir, shadowDirection), 0.4, 0.16) * (1.0 - weatherStrength * (1.0 - 0.2))
     );
     vec3 scattering = scatteringColor * (1.0 - absorption) * 30.0;
     return color * absorption + scattering;
