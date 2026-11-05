@@ -199,6 +199,7 @@ option.MOD_LIGHT_DETECTION.comment=将所有方块光照等级为最高的表面
 option.VANILLA_BLOCK_LIGHT_FADE=原版方块光照衰减
 option.VANILLA_BLOCK_LIGHT_FADE.comment=原版方块光照曲线的衰减速度
 option.SUNLIGHT_BRIGHTNESS=日光亮度
+option.SKY_LIGHT_OVERRIDE=天空光照覆盖
 option.NIGHT_BRIGHTNESS=夜晚亮度
 option.NIGHT_VISION_BRIGHTNESS=夜视亮度
 option.SUNLIGHTINRAIN=雨天阳光削减程度
