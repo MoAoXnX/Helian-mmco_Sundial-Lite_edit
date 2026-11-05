@@ -187,6 +187,7 @@ option.MOD_LIGHT_DETECTION.comment=Assuming all faces with maximum block light l
 option.VANILLA_BLOCK_LIGHT_FADE=Vanilla block light fade
 option.VANILLA_BLOCK_LIGHT_FADE.comment=Fading speed of vanilla block light strength
 option.SUNLIGHT_BRIGHTNESS=Sun light brightness
+option.SKY_LIGHT_OVERRIDE=Sky light override
 option.NIGHT_BRIGHTNESS=Night brightness
 option.NIGHT_VISION_BRIGHTNESS=Night vision brightness
 option.SUNLIGHTINRAIN=Sunlight in rain
