@@ -399,7 +399,7 @@ void main() {
         if (gbufferData.materialID == MAT_GRASS) {
             plantSkyNormal = vec3(0.0, 1.0, 0.0);
         }
-        float skyLightStrength = pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75) *
+        float skyLightStrength = mix(pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75), 1.0, SKY_LIGHT_OVERRIDE) *
             (plantSkyNormal.y * 0.3 + 0.6 + mix(dot(plantSkyNormal, sunDirection), dot(plantSkyNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
         #ifdef IS_IRIS
             vec3 worldPos = viewToWorldPos(viewPos);
