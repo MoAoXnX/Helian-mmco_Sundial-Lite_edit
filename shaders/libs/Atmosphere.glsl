@@ -7,7 +7,7 @@ const float rayLeighScaledHeight = 9500.0;
 const float mieScaledHeight = 1200.0;
 const vec2 scaledHeight = vec2(rayLeighScaledHeight, mieScaledHeight);
 const float mieG = 0.76;
-const float mieG2 = mieG * mieG;
+const float mieG2 = mieG * 0.86;
 
 const float earthRadius = 6371000.0;
 const float atmosphereThickness = 100000.0;

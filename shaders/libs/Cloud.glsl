@@ -221,6 +221,7 @@ vec4 sampleRealisticCloud(vec3 cloudPos, vec3 sunDir, vec3 atmosphere, float noi
         vec2 cExpH = c * exp2(earthScaledHeight - cloudDistance / scaledHeight * 1.44269502);
         vec3 sunlightStrength, moonlightStrength;
         sampleInScatteringDoubleSide(cloudDistance * 1.44269502, c, cExpH, RdotP, sunlightStrength, moonlightStrength);
+        moonlightStrength *= vec3(1.0) + (MOONLIGHT_TINT - vec3(1.0)) * nightFactor;
         RdotP *= abs(RdotP);
         sunlightStrength *= atmosphereAbsorption(RdotP, cloudDistance);
         moonlightStrength *= atmosphereAbsorption(-RdotP, cloudDistance);
@@ -501,6 +502,7 @@ vec4 planeClouds(vec3 worldPos, vec3 worldDir, vec3 sunDirection, vec3 skyColorU
             vec2 cExpH = c * currRelativeDensity;
             vec3 sunlightStrength, moonlightStrength;
             sampleInScatteringDoubleSide(cloudHeight, c, cExpH, LdotP, sunlightStrength, moonlightStrength);
+            moonlightStrength *= vec3(1.0) + (MOONLIGHT_TINT - vec3(1.0)) * nightFactor;
 
             float sunCosAngle = clamp(dot(worldDir, sunDirection), -1.0, 1.0);
             float sunPhase = mix(1.0, cloudMiePhase(sunCosAngle, CLOUD_REALISTIC_MIE_G) / cloudMiePhase(0.0, CLOUD_REALISTIC_MIE_G), CLOUD_REALISTIC_MIE_STRENGTH);
