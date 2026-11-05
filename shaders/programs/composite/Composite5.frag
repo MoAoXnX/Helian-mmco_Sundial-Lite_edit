@@ -240,8 +240,10 @@ void main() {
         float isTargetParticle = 1.0 - float(isTargetNotParticle);
         vec3 vanillaLight = vec3(0.0);
         #ifdef SHADOW_AND_SKY
+            float skyLightFactor = pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75);
+            skyLightFactor = mix(skyLightFactor, 1.0, SKY_LIGHT_OVERRIDE);
             vanillaLight +=
-                pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75) *
+                skyLightFactor *
                 (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
                 (1.0 - gbufferData.metalness) * (1.0 - 0.75 * weatherStrength);
         #endif
