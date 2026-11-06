@@ -237,6 +237,7 @@ option.VB_GI_LENGTH.comment=当 VBGI 开启时的追踪长度. VBAO 也会受此
 option.VB_AO_LENGTH=VBAO 追踪长度
 option.VB_AO_LENGTH.comment=当 VBGI 关闭时的追踪长度. 仅用于参考，不能精确反映实际追踪长度
 option.VB_MAX_BLEDED_FRAMES=VB 最大混合帧数
+option.SKY_LIGHT_GI=天空光 GI
 
 # Atmosphere
 option.ATMOSPHERE_VIEW_SAMPLE=大气散射视角方向采样数
