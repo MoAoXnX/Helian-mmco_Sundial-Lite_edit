@@ -16,7 +16,7 @@ float endStars(vec3 direction) {
     mat3 tiltX = mat3(vec3(1.0, 0.0, 0.0), vec3(0.0, cpr, spr), vec3(0.0, -spr, cpr));
     mat3 tiltXInv = mat3(vec3(1.0, 0.0, 0.0), vec3(0.0, cpr, -spr), vec3(0.0, spr, cpr));
 
-    float angle = frameTimeCounter * 2.0 * PI / 1000.0;
+    float angle = float(worldTime) * 2.0 * PI / 24000.0;
     float c = cos(angle);
     float s = sin(angle);
     mat3 spinZ = mat3(vec3(c, -s, 0.0), vec3(s, c, 0.0), vec3(0.0, 0.0, 1.0));
