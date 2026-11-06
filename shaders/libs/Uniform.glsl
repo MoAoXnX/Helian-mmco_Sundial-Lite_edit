@@ -14,6 +14,7 @@ uniform float rainyStrength;
 uniform float darknessFactor;
 uniform float weatherStrength;
 uniform float frameTimeCounter;
+uniform int worldTime;
 uniform float endFlashIntensity;
 uniform ivec2 atlasSize;
 uniform ivec2 eyeBrightnessSmooth;
