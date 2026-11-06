@@ -395,12 +395,14 @@ void main() {
     if (abs(gbufferData.depth) < 1.0) {
         // Merge some vec3s into floats to save registers
         float NdotV = clamp(dot(viewPos, -gbufferData.normal) * inversesqrt(dot(viewPos, viewPos)), 0.0, 1.0);
-        vec3 plantSkyNormal = mat3(gbufferModelViewInverse) * gbufferData.normal;
-        if (gbufferData.materialID == MAT_GRASS) {
-            plantSkyNormal = vec3(0.0, 1.0, 0.0);
-        }
-        float skyLightStrength = mix(pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75), 1.0, SKY_LIGHT_OVERRIDE) *
-            (plantSkyNormal.y * 0.3 + 0.6 + mix(dot(plantSkyNormal, sunDirection), dot(plantSkyNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
+        #ifndef SKY_LIGHT_GI
+            vec3 plantSkyNormal = mat3(gbufferModelViewInverse) * gbufferData.normal;
+            if (gbufferData.materialID == MAT_GRASS) {
+                plantSkyNormal = vec3(0.0, 1.0, 0.0);
+            }
+            float skyLightStrength = mix(pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75), 1.0, SKY_LIGHT_OVERRIDE) *
+                (plantSkyNormal.y * 0.3 + 0.6 + mix(dot(plantSkyNormal, sunDirection), dot(plantSkyNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
+        #endif
         #ifdef IS_IRIS
             vec3 worldPos = viewToWorldPos(viewPos);
             #ifdef DIRECTIONAL_LIGHT_LEVEL
@@ -428,10 +430,12 @@ void main() {
         vec3 blockLight = pow2(1.0 / (fadeFactor - fadeFactor * fadeFactor / (1.0 + fadeFactor) * gbufferData.lightmap.x) - 1.0 / fadeFactor) * commonLightColor;
         lightColor += blockLight;
         #ifdef SHADOW_AND_SKY
-            lightColor +=
-                skyLightStrength *
-                (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
-                (1.0 - 0.75 * weatherStrength);
+            #ifndef SKY_LIGHT_GI
+                lightColor +=
+                    skyLightStrength *
+                    (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
+                    (1.0 - 0.75 * weatherStrength);
+            #endif
         #endif
         lightColor *= (1.0 - currData.w * (1.0 - 0.15 * blendWeight));
         #ifdef VBGI
