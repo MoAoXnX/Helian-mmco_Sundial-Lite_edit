@@ -23,6 +23,10 @@ layout(location = 1) out uint texBuffer6;
 
 in vec2 texcoord;
 
+#ifdef SHADOW_AND_SKY
+    in vec3 skyColorUp;
+#endif
+
 uniform vec3 viewShadowDirection;
 
 #define PCSS
@@ -331,6 +335,26 @@ void main() {
             vec3 viewDir = viewPos * viewLength;
             float NdotV = clamp(dot(viewDir, -gbufferData.normal), 0.0, 1.0);
             vec3 diffuseAbsorption = (1.0 - gbufferData.metalness) * diffuseAbsorptionWeight(NdotV, gbufferData.smoothness, f0, f82);
+
+            #if defined SKY_LIGHT_GI && defined SHADOW_AND_SKY
+                float diffuseWeight = pow(1.0 - gbufferData.smoothness, 5.0);
+                #ifndef FULL_REFLECTION
+                    diffuseWeight = 1.0 - (1.0 - diffuseWeight) * sqrt(clamp(gbufferData.smoothness - (1.0 - gbufferData.smoothness) * (1.0 - 0.6666 * gbufferData.metalness), 0.0, 1.0));
+                #endif
+                float ambientOcclusion = 1.0 - texelFetch(colortex5, texel, 0).w;
+                vec3 plantSkyNormal = normalize(mat3(gbufferModelViewInverse) * gbufferData.normal);
+                if (gbufferData.materialID == MAT_GRASS) {
+                    plantSkyNormal = vec3(0.0, 1.0, 0.0);
+                }
+                float skyLightStrength = mix(pow2(1.0 / (0.75 - 0.75 * 0.75 / (1.0 + 0.75) * gbufferData.lightmap.y) - 1.0 / 0.75), 1.0, SKY_LIGHT_OVERRIDE) *
+                    (plantSkyNormal.y * 0.3 + 0.6 + mix(dot(plantSkyNormal, sunDirection), dot(plantSkyNormal, shadowDirection), clamp(-sunDirection.y * 10.0, 0.0, 1.0)) * 0.2);
+                finalColor.rgb +=
+                    skyLightStrength *
+                    (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
+                    (1.0 - 0.75 * weatherStrength) *
+                    ambientOcclusion *
+                    (diffuseAbsorption + diffuseWeight / PI) * gbufferData.albedo.rgb;
+            #endif
 
             vec3 shadow = sunColor * basicSunlight;
             #ifdef END_FLASH
