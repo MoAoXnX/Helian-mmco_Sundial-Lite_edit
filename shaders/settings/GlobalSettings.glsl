@@ -72,6 +72,7 @@
     const vec3 commonLightColor = vec3(LIGHT_COLOR_R, LIGHT_COLOR_G, LIGHT_COLOR_B) * LIGHT_BRIGHTNESS;
     // Visibility bitmask
         #define VBGI
+        // #define SKY_LIGHT_GI
 
 // Screen Space Reflection
     #define REFLECTION
