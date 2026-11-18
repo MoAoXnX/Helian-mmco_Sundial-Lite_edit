@@ -513,7 +513,6 @@ option.RIPPLE_SCALE=雨滴涟漪尺寸缩放
 option.RIPPLE_STRENGTH=雨滴涟漪强度
 option.RIPPLE_FADE_SPEED=雨滴涟漪淡出速度
 option.RIPPLE_FADE_SPEED.comment=雨滴涟漪强度随距离降低的速度
-option.RAIN_PUDDLE_SCALE=雨水坑缩放
 option.RAIN_DROP_SIZE=雨滴大小
 option.RAIN_DROP_SIZE.comment=只影响雨滴宽度，不影响雨滴长度
 option.RAIN_DROP_AMOUNT=雨滴数量

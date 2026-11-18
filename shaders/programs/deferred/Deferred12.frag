@@ -242,7 +242,11 @@ vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord,
     vec2 noise = texelFetch(noisetex, ivec2(screenSize * texcoord) & 63, 0).xy + vec2(0.734375, 0.359375) * float(frameCounter & 63);
     vec4 originProjPos = vec4(vec3(gbufferProjection[0].x, gbufferProjection[1].y, gbufferProjection[2].z) * originViewPos + gbufferProjection[3].xyz, -originViewPos.z);
     #ifdef TAA
-        originProjPos.xy += taaOffset * originProjPos.w;
+        vec2 taaOffsetScaled = taaOffset;
+        #if SR_ENABLE
+            taaOffsetScaled = upscaleRatio * taaOffsetScaled;
+        #endif
+        originProjPos.xy += taaOffsetScaled * originProjPos.w;
     #endif
     float originProjScale = 0.5 / originProjPos.w;
     vec2 originCoord = vec2(originProjPos.xy * originProjScale + 0.5);
@@ -355,6 +359,7 @@ vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord,
                     uint occBits0 = mX & mY;
 
                     uint visBits0 = occBits0 & (~occBits);
+                    occBits = occBits | occBits0;
                     #ifdef VBGI
                         if(visBits0 != 0u) {
                             float vis0 = float(CountBits(visBits0)) * (1.0 / 32.0);
@@ -362,7 +367,6 @@ vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord,
                             totalSamples.rgb += sampleData.rgb * vis0 * clamp(1.0 - isOriginNotHand * isHand, 0.0, 1.0);
                         }
                     #endif
-                    occBits = occBits | occBits0;
                 }
             }
             float occ0 = float(CountBits(occBits)) * (1.0 / 32.0);

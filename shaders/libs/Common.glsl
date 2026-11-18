@@ -196,7 +196,7 @@ vec3 sunlightSpecular(vec3 viewDir, vec3 lightDir, vec3 normal, float smoothness
 }
 
 float groundWetStrength(vec3 position, float normalDir, float metalness, float porosity, float outdoor) {
-    position *= RAIN_PUDDLE_SCALE;
+    position *= 0.004;
     position.y *= 0.2;
     float noise = smooth3DNoise(position);
     float weight = 1.0;

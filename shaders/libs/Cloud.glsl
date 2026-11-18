@@ -199,7 +199,7 @@ vec4 sampleRealisticCloud(vec3 cloudPos, vec3 sunDir, vec3 atmosphere, float noi
         float RdotP = 2.0 * dot(sunDir, relativeCloudPos);
         float sunlightOpticalDepth = 0.0;
         float moonlightOpticalDepth = 0.0;
-        float stepSize = CLOUD_REALISTIC_SHADOW_LIGHT_STEP_SIZE * (0.5 + noise);
+        float stepSize = CLOUD_REALISTIC_SHADOW_LIGHT_STEP_SIZE * 0.5 + CLOUD_REALISTIC_SHADOW_LIGHT_STEP_SIZE * noise;
         float stepLength = 0.0;
         for (int i = 0; i < cloudRealisticShadowLightSamples; i++) {
             stepLength += stepSize;
