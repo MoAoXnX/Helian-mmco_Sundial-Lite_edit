@@ -65,6 +65,7 @@ screen.BASICLIGHT_WORLD0_OPTIONS=基础亮度选项(world0)
 screen.SkyColor=天空颜色
 screen.REALISTICCLOUDQUALITY_IN_REF=反射中质量
 screen.SUNGLINT=阳光高光
+screen.SUBSERFACE_SCATTERING=次表面散射选项
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=各向异性过滤
@@ -141,7 +142,9 @@ value.SMOOTH_PARALLAX_OFFSET.2=左上
 value.SMOOTH_PARALLAX_OFFSET.3=右下
 value.SMOOTH_PARALLAX_OFFSET.4=右上
 # Specular
-option.SUBSERFACE_SCATTERING_STRENTGH=次表面散射强度
+option.SUBSERFACE_SCATTERING_STRENGTH=次表面散射强度
+option.SUN_SSS_GLOW=逆光次表面散射强度
+option.SUN_SSS_POWER=逆光次表面散射衰减
 option.PBR_BRIGHTNESS=PBR亮度
 option.PBR_BRIGHTNESS.comment=控制PBR发光与硬编码光源本身的亮度
 option.SPECULAR_FORMAT=PBR格式

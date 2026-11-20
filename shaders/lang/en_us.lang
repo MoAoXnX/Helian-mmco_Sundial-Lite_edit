@@ -57,6 +57,7 @@ screen.BASICLIGHT_WORLD0_OPTIONS=Basic light options (world0)
 screen.SkyColor=Sky Color
 screen.REALISTICCLOUDQUALITY_IN_REF=Quality in reflection
 screen.SUNGLINT=Sun glint
+screen.SUBSERFACE_SCATTERING=Subserface scattering
 
 # Texture
 option.ANISOTROPIC_FILTERING_QUALITY=Anisotropic filter
@@ -132,7 +133,9 @@ value.SMOOTH_PARALLAX_OFFSET.2=Left upper
 value.SMOOTH_PARALLAX_OFFSET.3=Right lower
 value.SMOOTH_PARALLAX_OFFSET.4=Right upper
 # Specular
-option.SUBSERFACE_SCATTERING_STRENTGH=Sub-surface scattering strength
+option.SUBSERFACE_SCATTERING_STRENGTH=Sub-surface scattering strength
+option.SUN_SSS_GLOW=Sun-facing SSS glow
+option.SUN_SSS_POWER=Sun-facing SSS falloff
 option.PBR_BRIGHTNESS=PBR brightness
 option.PBR_BRIGHTNESS.comment=Control brightness of PBR and hardcoded emissive objects
 option.SPECULAR_FORMAT=PBR format
