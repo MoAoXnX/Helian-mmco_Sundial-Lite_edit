@@ -254,19 +254,20 @@ float endAbsorptionBeta = 0.01 * END_FOG_DENSITY + blindnessFactor;
 
 vec3 solidAtmosphereScattering(vec3 color, vec3 worldDir, vec3 skyColor, float worldDepth, float skyLight) {
     float playerHeight = max(cameraPosition.y + WORLD_BASIC_HEIGHT + earthRadius, 300.0 + earthRadius);
-    vec3 sunLightColor;
-    vec3 moonLightColor;
-    atmosphereAbsorptionDoubleSideLUT(playerHeight, sunDirection.y, sunLightColor, moonLightColor);
     float LdotV = dot(worldDir, sunDirection);
     float depthFactor = 1.0 - exp2(-worldDepth * 0.001);
     float g = mieG * depthFactor;
     float g2 = g * g;
+    vec3 scatteringColor =
+        (skyColor + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
+        (1.0 - 0.75 * weatherStrength) * skyLight * skyLight;
+    vec3 sunLightColor;
+    vec3 moonLightColor;
+    atmosphereAbsorptionDoubleSideLUT(playerHeight, sunDirection.y, sunLightColor, moonLightColor);
     moonLightColor *= mix(NIGHT_BRIGHTNESS, NIGHT_VISION_BRIGHTNESS, nightVision);
-    skyColor += (sunLightColor + moonLightColor) * 0.5;
-    sunLightColor *= rayleighPhase(LdotV) + miePhase(LdotV, g, g2);
-    moonLightColor *= rayleighPhase(-LdotV) + miePhase(-LdotV, g, g2);
-    vec3 scatteringColor = mix((sunLightColor + moonLightColor) * 30.0, skyColor * 0.25, sqrt(weatherStrength) * 0.79) * skyLight * skyLight;
-
+    scatteringColor +=
+        (sunLightColor * miePhase(LdotV, g, g2) + moonLightColor * miePhase(-LdotV, g, g2)) *
+        10.0 * skyLight * skyLight;
     vec2 originRelativeHeight = earthScaledHeight - playerHeight / scaledHeight * 1.44269502;
     vec2 originDensity = exp2(originRelativeHeight);
     vec2 opticalDepth = originDensity * worldDepth * 5.0 * (ASF_DENSITY + RF_DENSITY * 5.0 * weatherStrength * weatherStrength * skyLight);
