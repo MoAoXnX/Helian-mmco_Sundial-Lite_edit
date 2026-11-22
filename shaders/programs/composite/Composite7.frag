@@ -210,13 +210,12 @@ void main() {
         if (weatherLightData > 0.3) {
             float sunlightStrength = 2.0 * weatherLightData - 1.0;
             bool isSnow = weatherData > 0.0;
-            float rainFogDimming = 1.0 - exp2(-RF_DENSITY * 4.0);
             float basicSunlight = isSnow
                 ? 8.0 * SUNLIGHT_BRIGHTNESS * (1.0 - sqrt(weatherStrength) * SUNLIGHTINRAIN)
-                : (1.0 - rainFogDimming * weatherStrength) * 9.5 * SUNLIGHT_BRIGHTNESS;
+                : (1.0 - weatherStrength) * 8.0 * SUNLIGHT_BRIGHTNESS;
             vec3 weatherLight = sunlightStrength * basicSunlight * sunColor
-                + skyColorUp * (1.0 - 0.75 * (isSnow ? 1.0 : rainFogDimming) * weatherStrength);
-            float weatherBlendWeight = clamp(weatherData * 1e+10, 0.0, 1.0) * 0.95 + 0.05;
+                + skyColorUp * (1.0 - 0.75 * weatherStrength);
+            float weatherBlendWeight = clamp(weatherData * 1e+10, 0.0, 1.0) * 0.8 + 0.2;
             centerData.rgb = mix(centerData.rgb, weatherLight, weatherBlendWeight);
         }
     #endif
