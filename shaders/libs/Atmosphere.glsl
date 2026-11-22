@@ -65,6 +65,9 @@ void atmosphereAbsorptionDoubleSideLUT(float height, float angle, out vec3 sunAb
     #ifdef IS_IRIS
         sunAbsorption = textureLod(transmittanceTex, vec2(lutHeight, sunLutAngle), 0.0).rgb;
         moonAbsorption = textureLod(transmittanceTex, vec2(lutHeight, moonLutAngle), 0.0).rgb;
+    #elif defined WEATHER_SKY_LUT
+        sunAbsorption = textureLod(shadowcolor1, vec2(lutHeight, sunLutAngle), 0.0).rgb;
+        moonAbsorption = textureLod(shadowcolor1, vec2(lutHeight, moonLutAngle), 0.0).rgb;
     #else
         sunAbsorption = textureLod(colortex7, vec2(lutHeight, sunLutAngle), 0.0).rgb;
         moonAbsorption = textureLod(colortex7, vec2(lutHeight, moonLutAngle), 0.0).rgb;
