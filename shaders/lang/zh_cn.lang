@@ -229,6 +229,9 @@ option.LIGHT_COLOR_R=光源颜色：红
 option.LIGHT_COLOR_G=光源颜色：绿
 option.LIGHT_COLOR_B=光源颜色：蓝
 option.HELD_LIGHT_RANGE=手持光照范围
+option.HELD_LIGHT_SHADOW=手持光源阴影
+option.HELD_LIGHT_SHADOW.comment=为主手与副手的手持光源启用屏幕空间阴影
+option.HELD_LIGHT_SHADOW_SAMPLES=手持光源阴影采样数
 # VisibilityBitmask
 option.VBGI=VBGI
 option.VBGI.comment=使用可见性位遮罩计算全局光照
