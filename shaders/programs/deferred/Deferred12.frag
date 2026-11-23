@@ -385,8 +385,8 @@ float heldLightScreenSpaceShadow(vec3 viewPos, vec3 geoNormal, vec3 lightPos, ve
     float geoNdotL = clamp(dot(geoNormal, lightDir), 0.0, 1.0);
 
     vec3 startView = viewPos
-        + geoNormal * min(pixelWorldSize * (1.25 + 1.25 / max(geoNdotL, 0.15)), 0.10)
-        + lightDir * min(pixelWorldSize * 1.5, 0.05);
+        + geoNormal * min(pixelWorldSize * (0.9 + 1.0 / max(geoNdotL, 0.15)), 0.08)
+        + lightDir * min(pixelWorldSize * 1.0, 0.04);
 
     vec3 endView = lightPos;
     if (-endView.z < 0.15) {
@@ -403,12 +403,11 @@ float heldLightScreenSpaceShadow(vec3 viewPos, vec3 geoNormal, vec3 lightPos, ve
     vec3 rayClip   = endClip - startClip;
 
     float invSamples = 1.0 / float(HELD_LIGHT_SHADOW_SAMPLES);
-    vec2 invScreenEdge = 1.0 / max(screenEdge, vec2(1e-4));
     float maxOcc = 0.0;
 
     for (int i = 0; i < HELD_LIGHT_SHADOW_SAMPLES; i++) {
         float u = (float(i) + noise) * invSamples;
-        float t = u * (0.45 + 0.55 * u);
+        float t = u * (0.10 + u * (0.30 + 0.60 * u));
 
         vec3 sampleClip = startClip + rayClip * t;
         if (sampleClip.z <= 0.15) {
@@ -454,27 +453,25 @@ float heldLightScreenSpaceShadow(vec3 viewPos, vec3 geoNormal, vec3 lightPos, ve
 
         float depthDiff = sampleClip.z - sampleViewZ;
         if (depthDiff > 0.0) {
-            float stepZ = abs(rayClip.z) * (0.45 + 1.1 * u) * invSamples;
+            float travelDist = traceDist * t;
+            float stepZ = abs(rayClip.z) * (0.10 + u * (0.60 + 1.80 * u)) * invSamples;
             float penumbra;
             float thickness;
             if (isOriginNotHand < 0.5) {
-                penumbra = max(0.015, 0.01 + traceDist * t * 0.05);
-                thickness = clamp(0.20 + stepZ * 1.5, 0.20, 0.55);
+                penumbra = max(pixelWorldSize * 2.0, 0.006 + travelDist * 0.05);
+                thickness = clamp(0.10 + travelDist * 0.50 + stepZ * 1.5, 0.10, 0.55);
             } else if (isHandSample) {
-                penumbra = max(0.03, 0.02 + traceDist * t * 0.06);
-                thickness = clamp(0.30 + stepZ * 1.5, 0.30, 0.80);
+                penumbra = max(pixelWorldSize * 2.0, 0.015 + travelDist * 0.06);
+                thickness = clamp(0.20 + travelDist * 0.50 + stepZ * 1.5, 0.20, 0.80);
             } else {
-                penumbra = max(0.05, 0.03 + traceDist * t * 0.07);
-                thickness = clamp(0.85 + stepZ * 2.5, 0.90, 2.40);
+                penumbra = max(pixelWorldSize * 2.5, 0.008 + travelDist * 0.07);
+                thickness = clamp(0.15 + travelDist * 0.65 + stepZ * 2.2, 0.15, 2.40);
             }
 
             float frontOcc = smoothstep(0.0, penumbra, depthDiff);
             float backFade = 1.0 - smoothstep(thickness * 0.55, thickness, depthDiff);
 
-            vec2 edgeDist = min(sampleUV, screenEdge - sampleUV) * invScreenEdge;
-            float edgeFade = smoothstep(0.0, 0.05, min(edgeDist.x, edgeDist.y));
-
-            maxOcc = max(maxOcc, frontOcc * backFade * edgeFade);
+            maxOcc = max(maxOcc, frontOcc * backFade);
             if (maxOcc > 0.99) {
                 break;
             }
@@ -499,7 +496,7 @@ vec3 computeHeldLight(
     } else if (isOriginNotHand < 0.5) {
         effectiveLightPos = lightPos;
     } else {
-        effectiveLightPos = lightPos * smoothstep(0.15, 1.15, -viewPos.z);
+        effectiveLightPos = lightPos * smoothstep(0.05, 0.35, -viewPos.z);
     }
     vec3 lightVec = effectiveLightPos - viewPos;
     float dist = length(lightVec);
@@ -618,11 +615,11 @@ void main() {
             float heldAoFactor = 1.0 - currData.w * 0.5;
             vec3 heldAlbedoDiffuse = gbufferData.albedo.rgb * diffuseAbsorption;
             colorData.rgb += computeHeldLight(
-                heldBlockLightValue, vec3(0.45, -0.28, -0.60), viewPos, gbufferData.geoNormal, gbufferData.normal,
+                heldBlockLightValue, vec3(0.45, 0.0, 0.0), viewPos, gbufferData.geoNormal, gbufferData.normal,
                 heldAlbedoDiffuse, heldAoFactor, isOriginNotHand, heldNoise
             );
             colorData.rgb += computeHeldLight(
-                heldBlockLightValue2, vec3(-0.45, -0.28, -0.60), viewPos, gbufferData.geoNormal, gbufferData.normal,
+                heldBlockLightValue2, vec3(-0.45, 0.0, 0.0), viewPos, gbufferData.geoNormal, gbufferData.normal,
                 heldAlbedoDiffuse, heldAoFactor, isOriginNotHand, fract(heldNoise + 0.5)
             );
         }
