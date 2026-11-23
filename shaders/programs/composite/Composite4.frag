@@ -242,9 +242,10 @@ void main() {
                 (skyColorUp + sunColor * 2.0 * SUNLIGHT_BRIGHTNESS * (1.0 - ENVIROMENT_DARKNESS)) *
                 (1.0 - gbufferData.metalness) * (1.0 - 0.75 * weatherStrength);
         #endif
+        int heldLightLevel = max(heldBlockLightValue, heldBlockLightValue2);
         #ifdef IS_IRIS
             float eyeRelatedDistance = length(waterWorldPos + relativeEyePosition);
-            gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldBlockLightValue / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
+            gbufferData.lightmap.x = max(gbufferData.lightmap.x, heldLightLevel / 15.0 * clamp(1.0 - eyeRelatedDistance / 15.0, 0.0, 1.0));
         #endif
         const float fadeFactor = VANILLA_BLOCK_LIGHT_FADE;
         vec3 blockLight = pow2(1.0 / (fadeFactor - fadeFactor * fadeFactor / (1.0 + fadeFactor) * gbufferData.lightmap.x) - 1.0 / fadeFactor) * commonLightColor;
@@ -255,10 +256,10 @@ void main() {
             vanillaLight += nightVision * NIGHT_VISION_BRIGHTNESS;
         #endif
         solidColor.rgb += gbufferData.albedo.rgb * gbufferData.albedo.w * (gbufferData.emissive * PBR_BRIGHTNESS * PI + vanillaLight * isTargetParticle);
-        if (heldBlockLightValue > 0 && isTargetParticle > 0.5) {
+        if (heldLightLevel > 0 && isTargetParticle > 0.5) {
             float heldLightDist = length(waterViewPos);
             float heldRangeFade = clamp(1.0 - heldLightDist / HELD_LIGHT_RANGE, 0.0, 1.0);
-            float heldIntensity = heldBlockLightValue / 15.0 * heldRangeFade * heldRangeFade;
+            float heldIntensity = heldLightLevel / 15.0 * heldRangeFade * heldRangeFade;
             solidColor.rgb += commonLightColor * heldIntensity * (gbufferData.albedo.rgb * gbufferData.albedo.w);
         }
         #if defined SHADOW_AND_SKY || defined END_FLASH

@@ -216,6 +216,9 @@ option.LIGHT_COLOR_R=Light color: red
 option.LIGHT_COLOR_G=Light color: green
 option.LIGHT_COLOR_B=Light color: blue
 option.HELD_LIGHT_RANGE=Held light range
+option.HELD_LIGHT_SHADOW=Held light shadow
+option.HELD_LIGHT_SHADOW.comment=Screen space shadows for main hand and offhand held light sources
+option.HELD_LIGHT_SHADOW_SAMPLES=Held light shadow samples
 # VisibilityBitmask
 option.VBGI=VBGI
 option.VBGI.comment=Visibility bitmask global illumination
