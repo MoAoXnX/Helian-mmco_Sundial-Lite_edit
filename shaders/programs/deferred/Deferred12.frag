@@ -378,7 +378,7 @@ vec4 screenSpaceVisibiliyBitmask(vec3 originViewPos, vec3 normal, vec2 texcoord,
 }
 
 #ifdef HELD_LIGHT_SHADOW
-float heldLightScreenSpaceShadow(vec3 viewPos, vec3 geoNormal, vec3 lightPos, vec3 lightDir, float noise) {
+float heldLightScreenSpaceShadow(vec3 viewPos, vec3 geoNormal, vec3 lightPos, vec3 lightDir, float isOriginNotHand, float noise) {
     float viewZ = -viewPos.z;
     vec2 projScale = vec2(gbufferProjection[0].x, gbufferProjection[1].y);
     float pixelWorldSize = 2.0 * viewZ * max(texelSize.x / max(abs(projScale.x), 1e-4), texelSize.y / max(abs(projScale.y), 1e-4));
@@ -429,26 +429,44 @@ float heldLightScreenSpaceShadow(vec3 viewPos, vec3 geoNormal, vec3 lightPos, ve
 
         ivec2 sampleTexel = ivec2(sampleUV * screenSize);
         float sampleDepth = uintBitsToFloat(texelFetch(colortex6, sampleTexel, 0).r);
+        bool isHandSample = sampleDepth > 1.000001;
 
-        if (sampleDepth > 1.0 || abs(sampleDepth) >= 0.999999) {
+        if (!isHandSample && abs(sampleDepth) >= 0.999999) {
+            continue;
+        }
+        // Ignore the hand holding this light source, while keeping the opposite hand as a shadow caster
+        if (isHandSample && sampleClip.x * lightPos.x > 0.0) {
             continue;
         }
 
         float sampleViewZ;
+        if (isHandSample) {
+            sampleViewZ = screenToViewDepth(sampleDepth - 1.0);
+        }
         #ifdef LOD
-            if (sampleDepth < 0.0) {
+            else if (sampleDepth < 0.0) {
                 sampleViewZ = screenToViewDepthLod(-sampleDepth);
-            } else
+            }
         #endif
-        {
+        else {
             sampleViewZ = screenToViewDepth(sampleDepth);
         }
 
         float depthDiff = sampleClip.z - sampleViewZ;
         if (depthDiff > 0.0) {
             float stepZ = abs(rayClip.z) * (0.45 + 1.1 * u) * invSamples;
-            float penumbra = max(0.05, 0.03 + traceDist * t * 0.07);
-            float thickness = clamp(0.85 + stepZ * 2.5, 0.90, 2.40);
+            float penumbra;
+            float thickness;
+            if (isOriginNotHand < 0.5) {
+                penumbra = max(0.015, 0.01 + traceDist * t * 0.05);
+                thickness = clamp(0.20 + stepZ * 1.5, 0.20, 0.55);
+            } else if (isHandSample) {
+                penumbra = max(0.03, 0.02 + traceDist * t * 0.06);
+                thickness = clamp(0.30 + stepZ * 1.5, 0.30, 0.80);
+            } else {
+                penumbra = max(0.05, 0.03 + traceDist * t * 0.07);
+                thickness = clamp(0.85 + stepZ * 2.5, 0.90, 2.40);
+            }
 
             float frontOcc = smoothstep(0.0, penumbra, depthDiff);
             float backFade = 1.0 - smoothstep(thickness * 0.55, thickness, depthDiff);
@@ -474,8 +492,15 @@ vec3 computeHeldLight(
     if (lightValue <= 0) {
         return vec3(0.0);
     }
-    float handOffsetScale = isOriginNotHand * smoothstep(0.15, 0.9, -viewPos.z);
-    vec3 effectiveLightPos = lightPos * handOffsetScale;
+    bool isSameHand = (isOriginNotHand < 0.5) && (viewPos.x * lightPos.x > 0.0);
+    vec3 effectiveLightPos;
+    if (isSameHand) {
+        effectiveLightPos = vec3(0.0);
+    } else if (isOriginNotHand < 0.5) {
+        effectiveLightPos = lightPos;
+    } else {
+        effectiveLightPos = lightPos * smoothstep(0.15, 1.15, -viewPos.z);
+    }
     vec3 lightVec = effectiveLightPos - viewPos;
     float dist = length(lightVec);
     float rangeFade = clamp(1.0 - dist / HELD_LIGHT_RANGE, 0.0, 1.0);
@@ -489,8 +514,8 @@ vec3 computeHeldLight(
     }
     float shadow = 1.0;
     #ifdef HELD_LIGHT_SHADOW
-        if (isOriginNotHand > 0.5) {
-            shadow = heldLightScreenSpaceShadow(viewPos, geoNormal, effectiveLightPos, lightDir, noise);
+        if (!isSameHand) {
+            shadow = heldLightScreenSpaceShadow(viewPos, geoNormal, effectiveLightPos, lightDir, isOriginNotHand, noise);
             float shadowDistFade = 1.0 - smoothstep(HELD_LIGHT_RANGE * 0.65, HELD_LIGHT_RANGE, dist);
             shadow = mix(1.0, shadow, shadowDistFade);
         }
@@ -593,11 +618,11 @@ void main() {
             float heldAoFactor = 1.0 - currData.w * 0.5;
             vec3 heldAlbedoDiffuse = gbufferData.albedo.rgb * diffuseAbsorption;
             colorData.rgb += computeHeldLight(
-                heldBlockLightValue, vec3(0.30, -0.32, -0.45), viewPos, gbufferData.geoNormal, gbufferData.normal,
+                heldBlockLightValue, vec3(0.45, -0.28, -0.60), viewPos, gbufferData.geoNormal, gbufferData.normal,
                 heldAlbedoDiffuse, heldAoFactor, isOriginNotHand, heldNoise
             );
             colorData.rgb += computeHeldLight(
-                heldBlockLightValue2, vec3(-0.30, -0.32, -0.45), viewPos, gbufferData.geoNormal, gbufferData.normal,
+                heldBlockLightValue2, vec3(-0.45, -0.28, -0.60), viewPos, gbufferData.geoNormal, gbufferData.normal,
                 heldAlbedoDiffuse, heldAoFactor, isOriginNotHand, fract(heldNoise + 0.5)
             );
         }
